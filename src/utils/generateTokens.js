@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken";
 
 const generateAccessToken = (payload) => {
   try {
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET_KEY, {
+    return jwt.sign(...payload, process.env.ACCESS_TOKEN_SECRET_KEY, {
       expiresIn: "20min",
     });
   } catch (error) {

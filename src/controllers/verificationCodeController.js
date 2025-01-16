@@ -37,7 +37,9 @@ const sendCodes = async (req, res) => {
 };
 
 const verifyCodes = async (req, res) => {
-  const { error } = verifyCodeSchema.validate();
+  const { error } = verifyCodeSchema.validate(req.body, {
+    abortEarly: false
+  });
 
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
