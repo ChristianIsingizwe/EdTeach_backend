@@ -67,4 +67,4 @@ const verifyCodes = async (req, res) => {
 
 
 
-export {sendCodes, verifyCode}
+export {sendCodes, verifyCodes}
