@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 /**
- * Generates an access token 
+ * Generates an access token
  * @param {object} payload - The data to encode in the token
  * @returns {string} The generated JWT token
  * @throws{Error} If there is an error during access token generation
@@ -21,10 +21,11 @@ const generateAccessToken = (payload) => {
 };
 
 /**
- * 
- * @param {object} payload - The normal data to encode 
- * @param {Number} tokenVersion The token version for the token
- * @returns {string} 
+ *
+ * @param {object} payload - The normal data to encode
+ * @param {number} tokenVersion The token version for the token
+ * @returns {string} The generated jwt token
+ * @throws{Error} if there is an error during the token version generation.
  */
 
 const generateRefreshToken = (payload, tokenVersion) => {
@@ -41,5 +42,4 @@ const generateRefreshToken = (payload, tokenVersion) => {
   throw new Error("Failed to generate refresh token");
 };
 
-
-export {generateAccessToken, generateRefreshToken}
+export { generateAccessToken, generateRefreshToken };
