@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { generateVerificationCode, hashCode } from "../utils/verificationCode";
+import { generateVerificationCode, hashCode, verifyCode } from "../utils/verificationCode";
 import Verification from "../models/userOTPVerification";
 import sendVerificationEmail from "../utils/emailSender";
 
