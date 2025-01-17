@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   sendCodes,
   verifyCodes,
-} from "../controllers/verificationCodeController.js";
+} from "../controllers/verificationCodeController";
 
 const router = Router();
 

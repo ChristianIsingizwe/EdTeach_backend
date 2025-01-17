@@ -12,8 +12,9 @@ app.use(express.json());
 app.use("/api/auth/", userRoutes);
 
 const port = process.env.APP_PORT || 5000;
+const mongoDBUri = process.env.MONGODB_URI;
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-  connectToDB('mongodb://localhost:27017/umurava');
+  connectToDB(mongoDBUri);
 });

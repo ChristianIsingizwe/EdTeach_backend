@@ -1,10 +1,11 @@
 import Joi from "joi";
-import User from "../models/userModel.js";
-import { hashPassword, verifyPassword } from "../utils/passwordHelper.js";
+import User from "../models/userModel";
+import { hashPassword, verifyPassword } from "../../utils/passwordHelper";
 import {
   generateAccessToken,
   generateRefreshToken,
-} from "../utils/generateTokens.js";
+} from "../../utils/generateTokens";
+import _ from "lodash";
 
 const registerUserSchema = Joi.object({
   firstName: Joi.string()
@@ -47,37 +48,38 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: errorMessages });
     }
 
-    const { firstName, lastName, email, password, role } = value;
+    const { firstName, lastName, email, password, role } = _.pick(value, [
+      "firstName",
+      "lastName",
+      "email",
+      "password",
+      "role",
+    ]);
 
     const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
       return res.status(400).json({ message: "User already exist." });
     }
 
-    const hashedPassword = hashPassword(password);
-    const newUser = User.create({
+    const hashedPassword = await hashPassword(password);
+    const newUser = await User.create({
       firstName,
       lastName,
       email,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
       role,
     });
-
-    await newUser.save();
-
     const accessToken = generateAccessToken({
       userId: newUser._id,
       userRole: newUser.role,
     });
     const refreshToken = generateRefreshToken(
-      { userId: await newUser._id },
+      { userId: newUser._id },
       newUser.tokenVersion
     );
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      samesite: "Strict",
-    });
-    res.status(201).json({ firstName, lastName, email, accessToken });
+    res
+      .status(201)
+      .json({ firstName, lastName, email, accessToken, refreshToken });
   } catch (error) {
     console.error("An error occurred while registering the user: ", error);
     res.status(500).json({ message: "Internal server error" });
@@ -94,7 +96,7 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ error: errorMessages });
     }
 
-    const { email, password } = req.body;
+    const { email, password } = _.pick(value, ['email', 'password']);
 
     const user = User.findOne({ email });
     if (!user) {
@@ -114,18 +116,15 @@ const loginUser = async (req, res) => {
       { userId: user._id },
       user.tokenVersion
     );
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      samesite: "Strict",
-    });
     res.status(200).json({
       lastName: user.lastName,
       email: user.email,
       accessToken,
+      refreshToken,
     });
   } catch (error) {
     console.error("An error occurred: ", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
