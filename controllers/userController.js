@@ -210,19 +210,21 @@ const loginUser = async (req, res) => {
   }
 };
 
-const findUser = async (req, res)=>{
-  const {id} = req.params
+const findUser = async (req, res) => {
+  const { id } = req.params;
 
-  const user = User.findById(id).select('firstName lastName email profilePicture')
-  if (!user){
-    return res.status(404).json({message: "User not found"})
+  const user = User.findById(id).select(
+    "firstName lastName email profilePicture"
+  );
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
   }
 
-  res.status(200).json({user})
-}
+  res.status(200).json({ user });
+};
 
-const findUsers = async (req, res)=>{
-  const user = User.find().select('firstName lastName email profilePicture')
-}
+const findUsers = async (req, res) => {
+  const user = User.find().select("firstName lastName email profilePicture");
+};
 
 export { registerUser, loginUser, findUser, findUsers };
