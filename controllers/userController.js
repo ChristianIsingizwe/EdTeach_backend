@@ -159,6 +159,14 @@ const updateUser = async (req, res)=>{
       const errorMessages = error.details.map(detail => detail.message)
       return res.status(400).json({error: errorMessages})
     }
+
+
+    const userId = req.user.userId; 
+    const user = await User.findById(userId)
+    if (!user){
+      return res.status(404).json({message: "User not found"})
+    }
+
   } catch (error) {
     console.error("An error occurred: ", error)
     res.status(500).json({message: "Internal server error"})
