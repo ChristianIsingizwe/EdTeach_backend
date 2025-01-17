@@ -1,10 +1,10 @@
 import Joi from "joi";
-import User from "../models/userModel";
-import { hashPassword, verifyPassword } from "../utils/passwordHelper";
+import User from "../models/userModel.js";
+import { hashPassword, verifyPassword } from "../utils/passwordHelper.js";
 import {
   generateAccessToken,
   generateRefreshToken,
-} from "../utils/generateTokens";
+} from "../utils/generateTokens.js";
 
 const registerUserSchema = Joi.object({
   firstName: Joi.string()
@@ -31,7 +31,7 @@ const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string()
     .pattern(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&/])[A-Za-z\d@$!%*?&]{8,}$/
     )
     .min(8)
     .required(),

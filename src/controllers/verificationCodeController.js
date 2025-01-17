@@ -3,9 +3,9 @@ import {
   generateVerificationCode,
   hashCode,
   verifyCode,
-} from "../utils/verificationCode";
-import Verification from "../models/userOTPVerification";
-import sendVerificationEmail from "../utils/emailSender";
+} from "../utils/verificationCode.js";
+import Verification from "../models/userOTPVerification.js";
+import sendVerificationEmail from "../utils/emailSender.js";
 
 const sendCodeSchema = Joi.object({
   senderId: Joi.string().required(),
