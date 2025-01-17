@@ -7,7 +7,6 @@ import {
 } from "../utils/generateTokens.js"; // Importing functions for token generation.
 import _ from "lodash"; // Importing lodash to simplify object manipulation.
 
-
 /**
  * Controller to handle user registration.
  *
@@ -68,10 +67,15 @@ const registerUser = async (req, res) => {
       newUser.tokenVersion
     );
 
+    // Return the refresh token inside a cookie.
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "Strict",
+      maxAge: 20 * 24 * 60 * 60 * 1000,
+    });
+
     // Return the user data along with the generated tokens.
-    res
-      .status(201)
-      .json({ firstName, lastName, email, accessToken, refreshToken });
+    res.status(201).json({ firstName, lastName, email, accessToken });
   } catch (error) {
     // Log any unexpected errors and return a 500 status.
     console.error("An error occurred while registering the user: ", error);
@@ -127,13 +131,18 @@ const loginUser = async (req, res) => {
       user.tokenVersion
     );
 
+    // Return the refresh token inside a cookie.
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "Strict",
+      maxAge: 20 * 24 * 60 * 60 * 1000,
+    });
+
     // Return the user data along with the generated tokens.
     res.status(200).json({
       lastName: user.lastName,
       email: user.email,
       accessToken,
-      refreshToken,
-      profilePic: user.profilePicture,
     });
   } catch (error) {
     // Log any unexpected errors and return a 500 status.

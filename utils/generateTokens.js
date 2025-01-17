@@ -54,7 +54,7 @@ const generateRefreshToken = (payload, tokenVersion) => {
 
     // Signs and generates the refresh token with the combined payload.
     return jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET_KEY, {
-      expiresIn: "30d", // The refresh token expires in 30 days.
+      expiresIn: "20d", // The refresh token expires in 20 days.
     });
   } catch (error) {
     // Log the error and throw a new one to ensure proper error handling.
