@@ -51,7 +51,7 @@ const userSchema = new Schema(
 );
 
 userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({lastName: 1});
+userSchema.index({ lastName: 1 });
 
 const User = model("User", userSchema);
 

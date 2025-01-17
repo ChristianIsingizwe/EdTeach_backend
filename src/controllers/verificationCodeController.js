@@ -1,5 +1,9 @@
 import Joi from "joi";
-import { generateVerificationCode, hashCode, verifyCode } from "../utils/verificationCode";
+import {
+  generateVerificationCode,
+  hashCode,
+  verifyCode,
+} from "../utils/verificationCode";
 import Verification from "../models/userOTPVerification";
 import sendVerificationEmail from "../utils/emailSender";
 
@@ -38,7 +42,7 @@ const sendCodes = async (req, res) => {
 
 const verifyCodes = async (req, res) => {
   const { error } = verifyCodeSchema.validate(req.body, {
-    abortEarly: false
+    abortEarly: false,
   });
 
   if (error) {
@@ -60,13 +64,11 @@ const verifyCodes = async (req, res) => {
 
     await Verification.deleteOne({ userId });
 
-    res.status(201).json({message: "Verification successfull"})
+    res.status(201).json({ message: "Verification successfull" });
   } catch (error) {
     console.error("Failed to verify the code ", error);
     res.status(500).json({ message: "Failed to  verify code. " });
   }
 };
 
-
-
-export {sendCodes, verifyCodes}
+export { sendCodes, verifyCodes };

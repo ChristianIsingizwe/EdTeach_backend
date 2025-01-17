@@ -73,9 +73,11 @@ const registerUser = async (req, res) => {
       { userId: await newUser._id },
       newUser.tokenVersion
     );
-    res
-      .status(201)
-      .json({ firstName, lastName, email, accessToken, refreshToken });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      samesite: "Strict",
+    });
+    res.status(201).json({ firstName, lastName, email, accessToken });
   } catch (error) {
     console.error("An error occurred while registering the user: ", error);
     res.status(500).json({ message: "Internal server error" });
@@ -112,16 +114,19 @@ const loginUser = async (req, res) => {
       { userId: user._id },
       user.tokenVersion
     );
-    res
-      .status(200)
-      .json({
-        lastName: user.lastName,
-        email: user.email,
-        accessToken,
-        refreshToken,
-      });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      samesite: "Strict",
+    });
+    res.status(200).json({
+      lastName: user.lastName,
+      email: user.email,
+      accessToken,
+    });
   } catch (error) {
     console.error("An error occurred: ", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export { registerUser, loginUser };
