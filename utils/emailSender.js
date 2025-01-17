@@ -8,13 +8,6 @@ const transporter = createTransport({
   },
 });
 
-/**
- * Sends a verification email.
- *
- * @param {string} email - The recipient's email address.
- * @param {string} code - The plain-text verification code.
- */
-
 const sendVerificationEmail = async (email, code) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -26,4 +19,4 @@ const sendVerificationEmail = async (email, code) => {
   await transporter.sendMail(mailOptions);
 };
 
-export default sendVerificationEmail
+export default sendVerificationEmail;

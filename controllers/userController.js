@@ -1,10 +1,10 @@
 import Joi from "joi";
-import User from "../models/userModel";
-import { hashPassword, verifyPassword } from "../../utils/passwordHelper";
+import User from "../models/userModel.js";
+import { hashPassword, verifyPassword } from "../utils/passwordHelper.js";
 import {
   generateAccessToken,
   generateRefreshToken,
-} from "../../utils/generateTokens";
+} from "../utils/generateTokens.js";
 import _ from "lodash";
 
 const registerUserSchema = Joi.object({
@@ -25,7 +25,7 @@ const registerUserSchema = Joi.object({
     )
     .min(8)
     .required(),
-  role: Joi.string().required().default("user"),
+  role: Joi.string().valid("user", "admin").default("user").optional(),
 });
 
 const loginSchema = Joi.object({
@@ -37,6 +37,30 @@ const loginSchema = Joi.object({
     .min(8)
     .required(),
 });
+
+const updateUserSchema = Joi.object({
+  firstName: Joi.string()
+    .min(3)
+    .max(255)
+    .regex(/^[A-Za-z]+$/)
+    .optional(),
+  lastName: Joi.string().min(3).max(255).regex().optional(),
+  currentPassword: Joi.string()
+    .pattern(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+    )
+    .min(8)
+    .optional(),
+
+  newPassword: Joi.string()
+    .pattern(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+    )
+    .min()
+    .optional(),
+});
+
+
 
 const registerUser = async (req, res) => {
   try {
@@ -96,7 +120,7 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ error: errorMessages });
     }
 
-    const { email, password } = _.pick(value, ['email', 'password']);
+    const { email, password } = _.pick(value, ["email", "password"]);
 
     const user = User.findOne({ email });
     if (!user) {
@@ -128,4 +152,17 @@ const loginUser = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser };
+const updateUser = async (req, res)=>{
+  try {
+    const {error, value} = updateUserSchema.validate(req.body)
+    if (error){
+      const errorMessages = error.details.map(detail => detail.message)
+      return res.status(400).json({error: errorMessages})
+    }
+  } catch (error) {
+    console.error("An error occurred: ", error)
+    res.status(500).json({message: "Internal server error"})
+  }
+}
+
+export { registerUser, loginUser, updateUser };
