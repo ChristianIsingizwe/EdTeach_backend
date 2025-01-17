@@ -58,9 +58,9 @@ const updateUserSchema = Joi.object({
     )
     .min()
     .optional(),
+
+  profilePic: Joi.string().uri().optional(),
 });
-
-
 
 const registerUser = async (req, res) => {
   try {
@@ -92,6 +92,7 @@ const registerUser = async (req, res) => {
       email,
       passwordHash: hashedPassword,
       role,
+      profilePicture,
     });
     const accessToken = generateAccessToken({
       userId: newUser._id,
@@ -145,6 +146,7 @@ const loginUser = async (req, res) => {
       email: user.email,
       accessToken,
       refreshToken,
+      profilePic: user.profilePicture,
     });
   } catch (error) {
     console.error("An error occurred: ", error);
@@ -152,25 +154,62 @@ const loginUser = async (req, res) => {
   }
 };
 
-const updateUser = async (req, res)=>{
+const updateUser = async (req, res) => {
   try {
-    const {error, value} = updateUserSchema.validate(req.body)
-    if (error){
-      const errorMessages = error.details.map(detail => detail.message)
-      return res.status(400).json({error: errorMessages})
+    const { error, value } = updateUserSchema.validate(req.body);
+    if (error) {
+      const errorMessages = error.details.map((detail) => detail.message);
+      return res.status(400).json({ error: errorMessages });
+    }
+    const { firstName, lastName, currentPassword, newPassword, profilePic } =
+      value;
+
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
+    if (currentPassword || newPassword) {
+      if (!verifyPassword(currentPassword, user.passwordHash)) {
+        return res.status(400).json({ message: "Incorrect current password." });
+      }
+      if (!newPassword) {
+        return res.status(400).json({ message: "New password not provided" });
+      }
 
-    const userId = req.user.userId; 
-    const user = await User.findById(userId)
-    if (!user){
-      return res.status(404).json({message: "User not found"})
+      user.passwordHash = await hashPassword(newPassword);
+
+      if (firstName) user.firstName = firstName;
+      if (lastName) user.lastName = lastName;
+      if (profilePic) user.profilePicture = profilePic;
+
+      await user.save();
+
+      res.status(201).json({
+        message: "User updated successfully",
+        user: _.pick(user, ["firstName", "lastName", "profilePic"]),
+      });
     }
-
   } catch (error) {
-    console.error("An error occurred: ", error)
-    res.status(500).json({message: "Internal server error"})
+    console.error("An error occurred: ", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
-export { registerUser, loginUser, updateUser };
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    await User.findByIdAndDelete(userId);
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("An error occurred: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export { registerUser, loginUser, updateUser, deleteUser };
