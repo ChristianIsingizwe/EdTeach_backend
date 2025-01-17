@@ -26,6 +26,12 @@ const challengeSchema = new Schema(
       required: true,
       min: 0,
     },
+    status: {
+      type: String,
+      enum: ["open", "ongoing", "completed"],
+      default: "open",
+      required: true,
+    },
     contactEmail: {
       type: String,
       required: true,
