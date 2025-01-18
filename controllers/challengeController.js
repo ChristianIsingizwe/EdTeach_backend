@@ -143,7 +143,7 @@ const joinChallenge = async (req, res) => {
 
 const getUsersInChallenge = async (req, res) => {
   try {
-    const { challengeId } =req.params;
+    const { challengeId } = req.params;
 
     if (!challengeId) {
       return res.status(400).json({
@@ -194,5 +194,5 @@ export {
   findChallenge,
   findChallenges,
   joinChallenge,
-  getUsersInChallenge
+  getUsersInChallenge,
 };
