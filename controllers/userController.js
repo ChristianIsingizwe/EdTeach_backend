@@ -165,7 +165,9 @@ const findUser = async (req, res) => {
 };
 
 const findUsers = async (req, res) => {
-  const user = User.find().select("firstName lastName email profilePicture");
+  const users = User.find().select("firstName lastName email profilePicture");
+  res.statuts(200).json({users})
 };
+
 
 export { registerUser, loginUser, findUser, findUsers };
