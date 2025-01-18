@@ -141,9 +141,6 @@ const joinChallenge = async (req, res) => {
   }
 };
 
-import User from "../models/userModel";
-import Challenge from "../models/challengeModel";
-
 export const getUsersInChallenge = async (req, res) => {
   try {
     const { challengeId } = req.params;
