@@ -9,6 +9,7 @@ import {
 } from "../utils/verificationCode.js"; // Importing utility functions for verification code generation and validation.
 import Verification from "../models/userOTPVerification.js"; // Importing the model for storing OTP verifications in the database.
 import sendVerificationEmail from "../utils/emailSender.js"; // Importing the function to send verification emails.
+import User from "../models/userModel.js";
 
 /**
  * Controller to send a verification code to the user's email.
@@ -94,6 +95,8 @@ const verifyCodes = async (req, res) => {
     if (!isValid) {
       return res.status(400).json({ error: "Invalid verification code." });
     }
+    // Updates the isVerified field into the database to true so as to mark the user as verified.
+    await User.findByIdAndUpdate(userId, { isVerified: true });
 
     // Delete the verification record from the database after successful verification.
     await Verification.deleteOne({ userId });

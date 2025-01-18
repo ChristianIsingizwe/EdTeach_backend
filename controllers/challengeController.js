@@ -1,5 +1,8 @@
 import Challenge from "../models/challengeModel";
-import { createChallengeSchema, editChallengeSchema, } from "../joiSchemas/challengeSchemas";
+import {
+  createChallengeSchema,
+  editChallengeSchema,
+} from "../joiSchemas/challengeSchemas";
 
 const createChallenge = async (req, res) => {
   try {
