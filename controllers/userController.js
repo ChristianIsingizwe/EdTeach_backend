@@ -1,12 +1,18 @@
 import User from "../models/userModel.js"; // Importing User model to interact with the database.
-import { registerUserSchema, loginSchema } from "../joiSchemas/userSchemas.js";
+import {
+  registerUserSchema,
+  loginSchema,
+  updateUserSchema,
+} from "../joiSchemas/userSchemas.js";
 import { hashPassword, verifyPassword } from "../utils/passwordHelper.js"; // Importing utility functions to hash and verify passwords.
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generateTokens.js"; // Importing functions for token generation.
 import _ from "lodash"; // Importing lodash to simplify object manipulation.
-
+import formidable from "formidable";
+import { statSync } from "fs";
+import processImage from "../utils/processImages.js";
 /**
  * Controller to handle user registration.
  *
@@ -166,8 +172,84 @@ const findUser = async (req, res) => {
 
 const findUsers = async (req, res) => {
   const users = User.find().select("firstName lastName email profilePicture");
-  res.statuts(200).json({users})
+  res.statuts(200).json({ users });
 };
 
+const updateUser = async (req, res) => {
+  const form = new formidable.IncomingForm();
+  form.keepExtensions = true;
 
-export { registerUser, loginUser, findUser, findUsers };
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      return res.status(400).json({ error: "Error parsing data: ", err });
+    }
+
+    try {
+      await updateUserSchema.validateAsync(fields);
+    } catch (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+
+    const { firstName, lastName, currentPassword, newPassword } = fields;
+    let hashedPassword;
+
+    if (currentPassword && newPassword) {
+      try {
+        const user = User.findById(req.user.id);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const isMatch = verifyPassword(currentPassword, user.passwordHash);
+        if (!isMatch) {
+          return res.status(400).json({ message: "Password incorrect" });
+        }
+        hashedPassword = await hashPassword(newPassword);
+      } catch (error) {
+        return res.status(500).json({ message: "Error updating passwords. " });
+      }
+
+      let profilePicturePath = files.profilePicture
+        ? files.profilePicture.path
+        : null;
+      if (profilePicturePath) {
+        const fileSize = statSync(profilePicturePath).size;
+        const maxFileSize = 5 * 1024 * 1024;
+
+        if (fileSize > maxFileSize) {
+          return res
+            .status(400)
+            .json({ error: "File too large. Max size is 5MB" });
+        }
+        try {
+          profilePicturePath = await processImage(profilePicturePath);
+        } catch (error) {
+          return res.status(500).json({ error: "Error processing the Image" });
+        }
+      }
+
+      try {
+        const updatedUser = await User.findByIdAndUpdate(
+          req.user.id,
+          {
+            firstName,
+            lastName,
+            password: hashedPassword,
+            profilePicture: profilePicturePath,
+          },
+          { new: true }
+        );
+        if (!updatedUser) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        res
+          .status(200)
+          .json({ message: "User updated successfully", updatedUser });
+      } catch (error) {
+        res.status(500).json({ message: "Error updating the user status" });
+      }
+    }
+  });
+};
+
+export { registerUser, loginUser, findUser, findUsers, updateUser };
