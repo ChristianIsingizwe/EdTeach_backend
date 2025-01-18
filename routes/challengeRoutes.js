@@ -3,6 +3,8 @@ import {
   createChallenge,
   deleteChallenge,
   editChallenge,
+  getUsersInChallenge,
+  joinChallenge,
 } from "../controllers/challengeController";
 
 const router = Router();
@@ -33,7 +35,7 @@ const router = Router();
 router.post("/create", createChallenge);
 
 /**
- * @route PATCH /challenges/update
+ * @route PUT /challenges/update
  * @description Updates an existing challenge.
  * @access Admin
  * @example
@@ -45,7 +47,7 @@ router.post("/create", createChallenge);
  *   }
  * }
  */
-router.patch("/update", editChallenge);
+router.put("/update", editChallenge);
 
 /**
  * @route DELETE /challenges/delete
@@ -58,5 +60,7 @@ router.patch("/update", editChallenge);
  * }
  */
 router.delete("/delete", deleteChallenge);
+router.get("/getUsersJoined", getUsersInChallenge)
+router.post("/join", joinChallenge)
 
 export default router;

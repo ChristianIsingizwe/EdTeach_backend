@@ -71,7 +71,7 @@ const challengeSchema = new Schema(
      * - Defaults to "open".
      * - Required field.
      */
-    status: {
+    challengeStatus: {
       type: String,
       enum: ["open", "ongoing", "completed"],
       default: "open",

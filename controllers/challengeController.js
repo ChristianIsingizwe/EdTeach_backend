@@ -42,7 +42,7 @@ const editChallenge = async (req, res) => {
       return res.status(400).json({ error: errorMessage });
     }
     if (value.deadline && new Date(value.deadline) <= new Date()) {
-      return res.status(400).json({ error: "Error must be in the future." });
+      return res.status(400).json({ error: "Deadline must be in the future." });
     }
 
     const updateChallenge = await Challenge.findByIdAndUpdate(id, value, {
@@ -141,9 +141,9 @@ const joinChallenge = async (req, res) => {
   }
 };
 
-export const getUsersInChallenge = async (req, res) => {
+const getUsersInChallenge = async (req, res) => {
   try {
-    const { challengeId } = req.params;
+    const { challengeId } =req.params;
 
     if (!challengeId) {
       return res.status(400).json({
