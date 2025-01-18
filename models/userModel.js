@@ -76,7 +76,7 @@ const userSchema = new Schema(
      * URL of the user's profile picture.
      * - Defaults to a Gravatar image with a placeholder.
      */
-    profilePicture: {
+    profilePictureUrl: {
       type: String,
       default: "https://www.gravatar.com/avatar/?d=mp", // Default avatar from Gravatar
     },

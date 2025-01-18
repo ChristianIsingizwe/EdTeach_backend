@@ -1,5 +1,5 @@
 import { Router } from "express";
-import handleProfilePic from "../controllers/profilePicController";
+import handleProfilePic from "../controllers/profilePicController.js";
 
 const router = Router()
 

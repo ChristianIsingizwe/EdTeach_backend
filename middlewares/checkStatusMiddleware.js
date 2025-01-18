@@ -1,4 +1,4 @@
-import Challenge from "../models/challengeModel";
+import Challenge from "../models/challengeModel.js";
 
 const checkChallengeStatus = async (req, res, next) => {
   try {

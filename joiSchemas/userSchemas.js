@@ -66,7 +66,6 @@ const updateUserSchema = Joi.object({
     )
     .min(8)
     .optional(), // The new password is optional and must meet the specified pattern.
-  profilePic: Joi.any().optional(), // The profile picture is optional.
 });
 
 export { registerUserSchema, loginSchema, updateUserSchema };

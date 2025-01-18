@@ -1,6 +1,6 @@
 import { verify } from "jsonwebtoken";
-import User from "../models/userModel";
-import { generateAccessToken } from "../utils/generateTokens";
+import User from "../models/userModel.js";
+import { generateAccessToken } from "../utils/generateTokens.js";
 
 const authorize = (requiredRole) => async (req, res, next) => {
   try {

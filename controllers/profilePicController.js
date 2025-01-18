@@ -2,12 +2,11 @@ import formidable from "formidable";
 import path from "path";
 import fs from "fs";
 import sharp from "sharp";
-import User from "../models/userModel";
+import User from "../models/userModel.js";
 
 const handleProfilePic = async (req, res) => {
   const uploadDir = path.join(__dirname, "../uploads/profile-pictures");
 
-  // Ensure the upload directory exists
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
@@ -15,8 +14,8 @@ const handleProfilePic = async (req, res) => {
   const form = formidable({
     uploadDir,
     keepExtensions: true,
-    maxFileSize: 5 * 1024 * 1024, // 5 MB limit
-    filter: (part) => part.mimetype?.startsWith("image/"), // Allow only image files
+    maxFileSize: 5 * 1024 * 1024,
+    filter: (part) => part.mimetype?.startsWith("image/"),
   });
 
   form.parse(req, async (err, fields, files) => {

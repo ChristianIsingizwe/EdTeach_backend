@@ -5,7 +5,7 @@ import {
   editChallenge,
   getUsersInChallenge,
   joinChallenge,
-} from "../controllers/challengeController";
+} from "../controllers/challengeController.js";
 
 const router = Router();
 

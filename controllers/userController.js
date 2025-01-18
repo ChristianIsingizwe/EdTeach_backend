@@ -151,7 +151,6 @@ const loginUser = async (req, res) => {
       accessToken,
     });
   } catch (error) {
-    // Log any unexpected errors and return a 500 status.
     console.error("An error occurred: ", error);
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -160,7 +159,7 @@ const loginUser = async (req, res) => {
 const findUser = async (req, res) => {
   const { id } = req.params;
 
-  const user = User.findById(id).select(
+  const user = await User.findById(id).select(
     "firstName lastName email profilePicture"
   );
   if (!user) {
@@ -171,17 +170,23 @@ const findUser = async (req, res) => {
 };
 
 const findUsers = async (req, res) => {
-  const users = User.find().select("firstName lastName email profilePicture");
-  res.statuts(200).json({ users });
+  const users = await User.find().select(
+    "firstName lastName email profilePicture"
+  );
+  res.status(200).json({ users });
 };
 
 const updateUser = async (req, res) => {
-  const form = new formidable.IncomingForm();
-  form.keepExtensions = true;
+  const form = formidable({
+    keepExtensions: true,
+    maxFileSize: 5 * 1024 * 1024,
+  });
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      return res.status(400).json({ error: "Error parsing data: ", err });
+      return res
+        .status(400)
+        .json({ error: "Error parsing data", details: err });
     }
 
     try {
@@ -195,7 +200,7 @@ const updateUser = async (req, res) => {
 
     if (currentPassword && newPassword) {
       try {
-        const user = User.findById(req.user.id);
+        const user = await User.findById(req.user.id);
         if (!user) {
           return res.status(404).json({ message: "User not found" });
         }
@@ -206,13 +211,15 @@ const updateUser = async (req, res) => {
         }
         hashedPassword = await hashPassword(newPassword);
       } catch (error) {
-        return res.status(500).json({ message: "Error updating passwords. " });
+        return res.status(500).json({ message: "Error updating passwords." });
       }
+    }
 
-      let profilePicturePath = files.profilePicture
-        ? files.profilePicture.path
-        : null;
-      if (profilePicturePath) {
+    let profilePicturePath = files.profilePicture
+      ? files.profilePicture.filepath
+      : null;
+    if (profilePicturePath) {
+      try {
         const fileSize = statSync(profilePicturePath).size;
         const maxFileSize = 5 * 1024 * 1024;
 
@@ -221,35 +228,56 @@ const updateUser = async (req, res) => {
             .status(400)
             .json({ error: "File too large. Max size is 5MB" });
         }
-        try {
-          profilePicturePath = await processImage(profilePicturePath);
-        } catch (error) {
-          return res.status(500).json({ error: "Error processing the Image" });
-        }
+
+        profilePicturePath = await processImage(profilePicturePath);
+      } catch (error) {
+        return res.status(500).json({ error: "Error processing the image" });
+      }
+    }
+
+    try {
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user.id,
+        {
+          firstName,
+          lastName,
+          passwordHash: hashedPassword,
+          profilePictureUrl: profilePicturePath,
+        },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
       }
 
-      try {
-        const updatedUser = await User.findByIdAndUpdate(
-          req.user.id,
-          {
-            firstName,
-            lastName,
-            password: hashedPassword,
-            profilePicture: profilePicturePath,
-          },
-          { new: true }
-        );
-        if (!updatedUser) {
-          return res.status(404).json({ message: "User not found" });
-        }
-        res
-          .status(200)
-          .json({ message: "User updated successfully", updatedUser });
-      } catch (error) {
-        res.status(500).json({ message: "Error updating the user status" });
-      }
+      res.status(200).json({
+        message: "User updated successfully",
+        updatedUser: {
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          profilePicture: updatedUser.profilePictureUrl,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating the user", error });
     }
   });
 };
 
-export { registerUser, loginUser, findUser, findUsers, updateUser };
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "Internal server error. " });
+    }
+    await User.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("An error occurred: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+export { registerUser, loginUser, findUser, findUsers, updateUser, deleteUser };

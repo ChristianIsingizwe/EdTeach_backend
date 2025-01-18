@@ -1,10 +1,10 @@
-import Challenge from "../models/challengeModel";
+import Challenge from "../models/challengeModel.js";
 import {
   createChallengeSchema,
   editChallengeSchema,
-} from "../joiSchemas/challengeSchemas";
+} from "../joiSchemas/challengeSchemas.js";
 import _ from "lodash";
-import User from "../models/userModel";
+import User from "../models/userModel.js";
 
 const createChallenge = async (req, res) => {
   try {

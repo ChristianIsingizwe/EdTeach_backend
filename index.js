@@ -11,8 +11,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use("/api/auth/", userRoutes);
-app.use("/api/auth/codes", verificationRoutes)
+app.use("/api/users/", userRoutes);
+app.use("/api/users/codes", verificationRoutes)
 app.use('/api/challenges', challengeRoutes)
 
 const port = process.env.APP_PORT || 5000;
