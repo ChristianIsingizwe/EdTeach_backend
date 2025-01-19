@@ -187,6 +187,10 @@ const getUsersInChallenge = async (req, res) => {
   }
 };
 
+const leaveChallenge = async (req, res) =>{
+  const {challengeId, userId} = req.body
+}
+
 export {
   createChallenge,
   editChallenge,
@@ -195,4 +199,5 @@ export {
   findChallenges,
   joinChallenge,
   getUsersInChallenge,
+  leaveChallenge
 };
