@@ -188,14 +188,10 @@ const updateUser = async (req, res) => {
         .status(400)
         .json({ error: "Error parsing data", details: err });
     }
-
-    try {
-      await updateUserSchema.validateAsync(fields);
-    } catch (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-
-    const { firstName, lastName, currentPassword, newPassword } = fields;
+    const { firstName, lastName, currentPassword, newPassword } = _.pick(
+      fields,
+      ["firstName", "lastName", "currentPassword", "newPassword"]
+    );
     let hashedPassword;
 
     if (currentPassword && newPassword) {

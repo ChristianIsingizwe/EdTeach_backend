@@ -4,7 +4,7 @@ import fs from "fs";
 import sharp from "sharp";
 import User from "../models/userModel.js";
 
-const handleProfilePic = async (req, res) => {
+const handleProfilePic = async (req, res) => {                   
   const uploadDir = path.join(__dirname, "../uploads/profile-pictures");
 
   if (!fs.existsSync(uploadDir)) {
