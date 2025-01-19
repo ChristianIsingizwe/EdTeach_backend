@@ -52,7 +52,7 @@ const challengeSchema = new Schema(
      * - Required field.
      */
     duration: {
-      type: Number,
+      type: String,
       required: true,
     },
     /**
@@ -61,7 +61,7 @@ const challengeSchema = new Schema(
      * - Must be a non-negative value.
      */
     moneyPrize: {
-      type: Number,
+      type: String,
       required: true,
       min: 0,
     },

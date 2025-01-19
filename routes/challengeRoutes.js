@@ -47,7 +47,7 @@ router.post("/create", createChallenge);
  *   }
  * }
  */
-router.put("/update", editChallenge);
+router.patch("/update/:id", editChallenge);
 
 /**
  * @route DELETE /challenges/delete
@@ -59,7 +59,7 @@ router.put("/update", editChallenge);
  *   "id": "challengeId"
  * }
  */
-router.delete("/delete", deleteChallenge);
+router.delete("/delete/:id", deleteChallenge);
 router.get("/getUsersJoined", getUsersInChallenge)
 router.post("/join", joinChallenge)
 

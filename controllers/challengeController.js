@@ -24,7 +24,7 @@ const createChallenge = async (req, res) => {
 
     const newChallenge = new Challenge(value);
     await newChallenge.save();
-    res.status(201).json({ message: "Challenge created successfully" });
+    res.status(201).json({ message: "Challenge created successfully" , challenge: newChallenge});
   } catch (error) {
     console.error("An error occurred: ", error);
     res.status(500).json({ message: "Internal server error" });
@@ -67,7 +67,7 @@ const editChallenge = async (req, res) => {
 const deleteChallenge = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedChallenge = Challenge.findByIdAndDelete(id);
+    const deletedChallenge = await Challenge.findByIdAndDelete(id);
 
     if (!deletedChallenge) {
       return res.status(404).json({ message: "Challenge not found" });
@@ -85,7 +85,7 @@ const deleteChallenge = async (req, res) => {
 const findChallenge = async (req, res) => {
   const { id } = req.params;
 
-  const challenge = Challenge.findById(id);
+  const challenge = await Challenge.findById(id);
   if (!challenge) {
     return res.status(404).json({ message: "Internal server error" });
   }
@@ -94,7 +94,7 @@ const findChallenge = async (req, res) => {
 };
 
 const findChallenges = async (req, res) => {
-  const challenges = Challenge.find();
+  const challenges = await Challenge.find();
   if (!challenges) {
     return res.status(404).json({ message: "No challenge found" });
   }

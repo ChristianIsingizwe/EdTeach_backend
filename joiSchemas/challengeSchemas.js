@@ -3,7 +3,7 @@ import Joi from "joi";
 const createChallengeSchema = Joi.object({
   title: Joi.string().required(),
   deadline: Joi.date().greater("now").required(),
-  duration: Joi.number().required(),
+  duration: Joi.string().required(),
   moneyPrize: Joi.string().required(),
   contactEmail: Joi.string().email().required(),
   projectDescription: Joi.string().max(260).required(),
@@ -13,7 +13,7 @@ const createChallengeSchema = Joi.object({
 const editChallengeSchema = Joi.object({
   title: Joi.string().optional(),
   deadline: Joi.date().greater("now").optional(),
-  duration: Joi.number().optional(),
+  duration: Joi.string().optional(),
   moneyPrize: Joi.string().optional(),
   contactEmail: Joi.string().email().optional(),
   projectDescription: Joi.string().max(260).optional(),
