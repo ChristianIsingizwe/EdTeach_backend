@@ -10,6 +10,8 @@ import {
   generateRefreshToken,
 } from "../utils/generateTokens.js"; // Importing functions for token generation.
 import _ from "lodash"; // Importing lodash to simplify object manipulation.
+import formidable from "formidable";
+import path from "path";
 /**
  * Controller to handle user registration.
  *
@@ -192,7 +194,47 @@ const deleteUser = async (req, res) => {
 const updateUser = async (req, res)=>{
   const { id } = req.params
   try {
-    
+    const form = formidable({
+      multiples: false, 
+      maxFileSize: 3*1024*1024, 
+      filter: ({mimetype}) =>{
+        const allowedMimeTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/tiff",
+          "image/bmp", 
+          "image/gif", 
+          "image/svg+xml"
+        ]
+        return allowedMimeTypes.includes(mimetype)
+      }, 
+      uploadDir: path.join(__dirname, "../uploads"), 
+      keepExtensions: true
+    }); 
+
+    form.parse(req, async(err, fields, files)=>{
+      if (err){
+        console.error("Error parsing the form: ", err)
+        return res.status(400).json({message: "Invalid form."})
+      }
+      try {
+        const {error} = updateUserSchema.validate(fields)
+        if (error){
+          const errorMessages = error.details.map(detail => detail.message)
+          return res.status(400).json({error: errorMessages})
+        }
+
+        const userId = req.params
+        const user = await User.findById(userId)
+        if (!user){
+          return res.status(404).json({message: "User not found"})
+        }
+        if (fields.currentPassword && fields.newPassword){ 
+          
+        }
+      } catch (error) {
+      }
+    })
   } catch (error) {
     console.error("An error occurred: ", error)
     res.status(500).json({message: "Internal server error."})
