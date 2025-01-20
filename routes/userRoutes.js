@@ -6,6 +6,7 @@ import {
   loginUser,
   registerUser,
   updateUser,
+  verifyOTP,
 } from "../controllers/userController.js";
 
 const router = Router();
@@ -13,8 +14,9 @@ const router = Router();
 router.get("/", findUsers);
 router.post("/login", loginUser);
 router.post("/register", registerUser);
+router.post("/verifyOtp", verifyOTP);
 router.get("/:id", findUser);
 router.patch("/updateUser/:id", updateUser);
-router.delete('/delete/:id', deleteUser)
+router.delete("/delete/:id", deleteUser);
 
 export default router;

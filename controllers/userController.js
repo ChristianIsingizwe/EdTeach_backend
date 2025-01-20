@@ -9,11 +9,13 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generateTokens.js"; // Importing functions for token generation.
-import _ from "lodash"; // Importing lodash to simplify object manipulation.
+import _, { random } from "lodash"; // Importing lodash to simplify object manipulation.
 import formidable from "formidable";
 import path from "path";
 import { validateFile } from "../utils/imageHelpers.js";
 import fs from "fs";
+import { randomBytes } from "crypto";
+import sendOTP from "../utils/OTP.js";
 /**
  * Controller to handle user registration.
  *
@@ -64,25 +66,20 @@ const registerUser = async (req, res) => {
       role,
     });
 
-    // Generate an access token and a refresh token for the new user.
-    const accessToken = generateAccessToken({
-      userId: newUser._id,
-      userRole: newUser.role,
-    });
-    const refreshToken = generateRefreshToken(
-      { userId: newUser._id },
-      newUser.tokenVersion
-    );
+    const otp = randomBytes(3).toString("hex");
+    newUser.otp = otp;
 
-    // Return the refresh token inside a cookie.
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      sameSite: "Strict",
-      maxAge: 20 * 24 * 60 * 60 * 1000,
-    });
+    newUser.otpExpiration = Date.now() + 5 * 60 * 1000;
+
+    await newUser.save();
+
+    await sendOTP(email, otp);
 
     // Return the user data along with the generated tokens.
-    res.status(201).json({ firstName, lastName, email, accessToken });
+    res.status(201).json({
+      email,
+      message: "User registered successfully please check your email",
+    });
   } catch (error) {
     // Log any unexpected errors and return a 500 status.
     console.error("An error occurred while registering the user: ", error);
@@ -128,7 +125,39 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Generate an access token and a refresh token for the user.
+    const otp = randomBytes(3).toString('hex')
+    user.otp = otp; 
+    user.otpExpiration = Date.now() + 5*60*1000;
+
+    await user.save()
+    await sendOTP(user.email, otp)
+
+    // Return the user data along with the generated tokens.
+    res.status(200).json({
+      email: user.email, 
+      message: "Verify your email for the OTP"
+    });
+  } catch (error) {
+    console.error("An error occurred: ", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = _.pick(req.body, ["email", "otp"]); // Get email and OTP from request body
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check if OTP exists and is not expired
+    if (!user.otp || user.otp !== otp || Date.now() > user.otpExpiration) {
+      return res.status(400).json({ message: "Invalid or expired OTP." });
+    }
+
+    // OTP is valid, generate access and refresh tokens
     const accessToken = generateAccessToken({
       userId: user._id,
       userRole: user.role,
@@ -138,22 +167,28 @@ const loginUser = async (req, res) => {
       user.tokenVersion
     );
 
-    // Return the refresh token inside a cookie.
+    // Store the refresh token in a cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: "Strict",
-      maxAge: 20 * 24 * 60 * 60 * 1000,
+      maxAge: 20 * 24 * 60 * 60 * 1000, // 20 days
     });
 
-    // Return the user data along with the generated tokens.
+    // Respond with the tokens and user data
     res.status(200).json({
+      firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
       accessToken,
     });
+
+    // Clear the OTP fields after successful verification
+    user.otp = null;
+    user.otpExpiration = null;
+    await user.save();
   } catch (error) {
-    console.error("An error occurred: ", error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.error("Error verifying OTP: ", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -310,4 +345,4 @@ const updateUser = async (req, res) => {
   });
 };
 
-export { registerUser, loginUser, findUser, findUsers, updateUser, deleteUser };
+export { registerUser, loginUser, findUser, findUsers, updateUser, deleteUser, verifyOTP };

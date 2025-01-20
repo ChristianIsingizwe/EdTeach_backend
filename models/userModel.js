@@ -90,15 +90,13 @@ const userSchema = new Schema(
       required: true,
       default: 1,
     },
-    /**
-     * This is a field for checking if the user has been verified by entered the code he has been given on his email.
-     * - Default is false 
-     * - The field is required
-     */
-    isVerified: {
-      type: Boolean, 
-      required: true, 
-      default: false
+    otp: {
+      type: String,
+      default: null
+    },
+    otpExpiration:{
+      type: Date, 
+      default: null
     },
     /**
      * References to the challenges the user has joined.
