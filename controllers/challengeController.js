@@ -107,7 +107,7 @@ const findChallenges = async (req, res) => {
 
 const joinChallenge = async (req, res) => {
   try {
-    const { userId, challengeId } = _.pick(req.body, ["userId", "challengeId"]);
+    const { userId, challengeId } = req.params;
 
     if (!userId || !challengeId) {
       return res
@@ -195,9 +195,41 @@ const getUsersInChallenge = async (req, res) => {
   }
 };
 
-const leaveChallenge = async (req, res)=>{
-  const {challengeId, userId} = req.body 
-}
+const leaveChallenge = async (req, res) => {
+  const { challengeId, userId } = req.params;
+
+  try {
+    const user = User.findById(userId);
+    const challenge = Challenge.findById(challengeId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!challenge) {
+      return res.status(404).json({ message: "Challenge not found" });
+    }
+
+    const userInChallenge = user.joinedChallenges.includes(challengeId);
+
+    if (!userInChallenge) {
+      return res.status(400).json({ message: "User not in challenge." });
+    }
+    user.joinedChallenges = user.joinedChallenges.filter(
+      (id) => id.toString() !== challengeId
+    );
+    await user.save();
+
+    challenge.participants = challenge.participants.filter(
+      (id) => id.toString() !== userId
+    );
+    await challenge.save();
+
+    return res.status(200).json({ message: "User leaved successfully" });
+  } catch (error) {
+    console.error("An error occurred: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 export {
   createChallenge,
   editChallenge,
@@ -206,4 +238,5 @@ export {
   findChallenges,
   joinChallenge,
   getUsersInChallenge,
+  leaveChallenge
 };
