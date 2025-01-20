@@ -12,6 +12,8 @@ import {
 import _ from "lodash"; // Importing lodash to simplify object manipulation.
 import formidable from "formidable";
 import path from "path";
+import { validateFile } from "../utils/imageHelpers.js";
+import fs from "fs";
 /**
  * Controller to handle user registration.
  *
@@ -191,53 +193,121 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const updateUser = async (req, res)=>{
-  const { id } = req.params
-  try {
-    const form = formidable({
-      multiples: false, 
-      maxFileSize: 3*1024*1024, 
-      filter: ({mimetype}) =>{
-        const allowedMimeTypes = [
+const updateUser = async (req, res) => {
+  const form = formidable({
+    multiples: false, // Single file upload
+    maxFileSize: 5 * 1024 * 1024, // 5 MB size limit
+    filter: ({ mimetype }) => {
+      const allowedMimeTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/tiff",
+        "image/bmp",
+        "image/gif",
+        "image/svg+xml",
+      ];
+      return allowedMimeTypes.includes(mimetype);
+    },
+    uploadDir: path.join(__dirname, "../uploads"), // Temporary storage directory
+    keepExtensions: true, // Preserve file extensions
+  });
+
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      console.error("Error parsing form:", err);
+      return res.status(400).json({ error: "Invalid form data." });
+    }
+
+    try {
+      // Validate JSON fields
+      const { error } = updateUserSchema.validate(fields);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+      }
+
+      const { id } = req.params;
+      const user = await User.findById(id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+
+      // Update password if provided
+      if (fields.currentPassword && fields.newPassword) {
+        const isMatch = await verifyPassword(
+          fields.currentPassword,
+          user.passwordHash
+        );
+        if (!isMatch) {
+          return res
+            .status(400)
+            .json({ error: "Current password is incorrect." });
+        }
+        user.password = hashPassword(fields.newPassword);
+      }
+
+      // Update other fields
+      if (fields.firstName) user.firstName = fields.firstName;
+      if (fields.lastName) user.lastName = fields.lastName;
+
+      // Handle profile picture if provided
+      if (files.profilePicture) {
+        const file = files.profilePicture;
+
+        // Validate file
+        validateFile(file, 5 * 1024 * 1024, [
           "image/jpeg",
           "image/png",
           "image/tiff",
-          "image/bmp", 
-          "image/gif", 
-          "image/svg+xml"
-        ]
-        return allowedMimeTypes.includes(mimetype)
-      }, 
-      uploadDir: path.join(__dirname, "../uploads"), 
-      keepExtensions: true
-    }); 
+          "image/bmp",
+          "image/gif",
+          "image/svg+xml",
+        ]);
 
-    form.parse(req, async(err, fields, files)=>{
-      if (err){
-        console.error("Error parsing the form: ", err)
-        return res.status(400).json({message: "Invalid form."})
-      }
-      try {
-        const {error} = updateUserSchema.validate(fields)
-        if (error){
-          const errorMessages = error.details.map(detail => detail.message)
-          return res.status(400).json({error: errorMessages})
-        }
+        const outputDir = path.join(__dirname, "../public/profile-pictures");
+        fs.mkdir(outputDir, { recursive: true });
 
-        const userId = req.params
-        const user = await User.findById(userId)
-        if (!user){
-          return res.status(404).json({message: "User not found"})
+        if (
+          !["image/svg+xml", "image/gif", "image/bmp"].includes(file.mimetype)
+        ) {
+          // Resize and save image
+          const resizedImagePath = await resizeImage(
+            file.filepath,
+            path.join(outputDir, `user-${user._id}-${Date.now()}.jpeg`),
+            300
+          );
+          user.profilePictureUrl = `/profile-pictures/${path.basename(
+            resizedImagePath
+          )}`;
+        } else {
+          // Move file as is for non-resizable formats
+          const outputPath = path.join(
+            outputDir,
+            `user-${user._id}-${Date.now()}-${file.originalFilename}`
+          );
+          fs.rename(file.filepath, outputPath);
+          user.profilePictureUrl = `/profile-pictures/${path.basename(
+            outputPath
+          )}`;
         }
-        if (fields.currentPassword && fields.newPassword){ 
-          
-        }
-      } catch (error) {
       }
-    })
-  } catch (error) {
-    console.error("An error occurred: ", error)
-    res.status(500).json({message: "Internal server error."})
-  }
-}
+
+      await user.save();
+
+      res.status(200).json({
+        message: "User updated successfully.",
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profilePicture: user.profilePictureUrl,
+        },
+      });
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res
+        .status(500)
+        .json({ error: "An error occurred while updating the profile." });
+    }
+  });
+};
+
 export { registerUser, loginUser, findUser, findUsers, updateUser, deleteUser };
