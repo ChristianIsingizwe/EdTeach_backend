@@ -33,6 +33,7 @@ const router = Router();
  * }
  */
 router.post("/create", createChallenge);
+router.post("/join", joinChallenge);
 
 /**
  * @route PUT /challenges/update
@@ -47,6 +48,7 @@ router.post("/create", createChallenge);
  *   }
  * }
  */
+router.get("/getUsersJoined/:id", getUsersInChallenge);
 router.patch("/update/:id", editChallenge);
 
 /**
@@ -59,8 +61,7 @@ router.patch("/update/:id", editChallenge);
  *   "id": "challengeId"
  * }
  */
+
 router.delete("/delete/:id", deleteChallenge);
-router.get("/getUsersJoined", getUsersInChallenge)
-router.post("/join", joinChallenge)
 
 export default router;

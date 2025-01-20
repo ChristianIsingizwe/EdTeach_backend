@@ -24,7 +24,12 @@ const createChallenge = async (req, res) => {
 
     const newChallenge = new Challenge(value);
     await newChallenge.save();
-    res.status(201).json({ message: "Challenge created successfully" , challenge: newChallenge});
+    res
+      .status(201)
+      .json({
+        message: "Challenge created successfully",
+        challenge: newChallenge,
+      });
   } catch (error) {
     console.error("An error occurred: ", error);
     res.status(500).json({ message: "Internal server error" });
@@ -123,12 +128,17 @@ const joinChallenge = async (req, res) => {
       return res.status(404).json({ message: "Challenge not found" });
     }
 
-    if (user.joinedChallenges.includes(challengeId)) {
+    if (
+      user.joinedChallenges.includes(challengeId) ||
+      challenge.participants.includes(userId)
+    ) {
       return res.status(400).json({ message: "User already joined. " });
     }
 
     user.joinedChallenges.push(challengeId);
+    challenge.participants.push(userId);
     await user.save();
+    await challenge.save();
 
     res.status(200).json({
       message: "Successfully joined the challenge",
@@ -187,9 +197,9 @@ const getUsersInChallenge = async (req, res) => {
   }
 };
 
-const leaveChallenge = async (req, res) =>{
-  const {challengeId, userId} = req.body
-}
+const leaveChallenge = async (req, res) => {
+  const { challengeId, userId } = req.body;
+};
 
 export {
   createChallenge,
@@ -199,5 +209,5 @@ export {
   findChallenges,
   joinChallenge,
   getUsersInChallenge,
-  leaveChallenge
+  leaveChallenge,
 };
