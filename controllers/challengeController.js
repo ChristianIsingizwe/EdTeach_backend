@@ -24,12 +24,10 @@ const createChallenge = async (req, res) => {
 
     const newChallenge = new Challenge(value);
     await newChallenge.save();
-    res
-      .status(201)
-      .json({
-        message: "Challenge created successfully",
-        challenge: newChallenge,
-      });
+    res.status(201).json({
+      message: "Challenge created successfully",
+      challenge: newChallenge,
+    });
   } catch (error) {
     console.error("An error occurred: ", error);
     res.status(500).json({ message: "Internal server error" });
@@ -197,10 +195,9 @@ const getUsersInChallenge = async (req, res) => {
   }
 };
 
-const leaveChallenge = async (req, res) => {
-  const { challengeId, userId } = req.body;
-};
-
+const leaveChallenge = async (req, res)=>{
+  const {challengeId, userId} = req.body 
+}
 export {
   createChallenge,
   editChallenge,
@@ -209,5 +206,4 @@ export {
   findChallenges,
   joinChallenge,
   getUsersInChallenge,
-  leaveChallenge,
 };
