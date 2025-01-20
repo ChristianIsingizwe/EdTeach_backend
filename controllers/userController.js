@@ -10,9 +10,6 @@ import {
   generateRefreshToken,
 } from "../utils/generateTokens.js"; // Importing functions for token generation.
 import _ from "lodash"; // Importing lodash to simplify object manipulation.
-import formidable from "formidable";
-import { statSync } from "fs";
-import processImage from "../utils/processImages.js";
 /**
  * Controller to handle user registration.
  *
@@ -176,91 +173,6 @@ const findUsers = async (req, res) => {
   res.status(200).json({ users });
 };
 
-const updateUser = async (req, res) => {
-  const form = formidable({
-    keepExtensions: true,
-    maxFileSize: 5 * 1024 * 1024,
-  });
-
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      return res
-        .status(400)
-        .json({ error: "Error parsing data", details: err });
-    }
-    const { firstName, lastName, currentPassword, newPassword } = _.pick(
-      fields,
-      ["firstName", "lastName", "currentPassword", "newPassword"]
-    );
-    let hashedPassword;
-
-    if (currentPassword && newPassword) {
-      try {
-        const user = await User.findById(req.user.id);
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
-
-        const isMatch = verifyPassword(currentPassword, user.passwordHash);
-        if (!isMatch) {
-          return res.status(400).json({ message: "Password incorrect" });
-        }
-        hashedPassword = await hashPassword(newPassword);
-      } catch (error) {
-        return res.status(500).json({ message: "Error updating passwords." });
-      }
-    }
-
-    let profilePicturePath = files.profilePicture
-      ? files.profilePicture.filepath
-      : null;
-    if (profilePicturePath) {
-      try {
-        const fileSize = statSync(profilePicturePath).size;
-        const maxFileSize = 5 * 1024 * 1024;
-
-        if (fileSize > maxFileSize) {
-          return res
-            .status(400)
-            .json({ error: "File too large. Max size is 5MB" });
-        }
-
-        profilePicturePath = await processImage(profilePicturePath);
-      } catch (error) {
-        return res.status(500).json({ error: "Error processing the image" });
-      }
-    }
-
-    try {
-      const updatedUser = await User.findByIdAndUpdate(
-        req.user.id,
-        {
-          firstName,
-          lastName,
-          passwordHash: hashedPassword,
-          profilePictureUrl: profilePicturePath,
-        },
-        { new: true }
-      );
-
-      if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.status(200).json({
-        message: "User updated successfully",
-        updatedUser: {
-          firstName: updatedUser.firstName,
-          lastName: updatedUser.lastName,
-          profilePicture: updatedUser.profilePictureUrl,
-        },
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Error updating the user", error });
-    }
-  });
-};
-
 const deleteUser = async (req, res) => {
   const { id } = req.params;
   try {
@@ -276,4 +188,14 @@ const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+const updateUser = async (req, res)=>{
+  const { id } = req.params
+  try {
+    
+  } catch (error) {
+    console.error("An error occurred: ", error)
+    res.status(500).json({message: "Internal server error."})
+  }
+}
 export { registerUser, loginUser, findUser, findUsers, updateUser, deleteUser };

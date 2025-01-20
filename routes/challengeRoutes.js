@@ -5,6 +5,7 @@ import {
   editChallenge,
   getUsersInChallenge,
   joinChallenge,
+  leaveChallenge,
 } from "../controllers/challengeController.js";
 
 const router = Router();
@@ -33,7 +34,8 @@ const router = Router();
  * }
  */
 router.post("/create", createChallenge);
-router.post("/join", joinChallenge);
+router.post("/join/:userId/:challengeId", joinChallenge);
+router.post("/leave/:userId/:challengeId", leaveChallenge)
 
 /**
  * @route PUT /challenges/update

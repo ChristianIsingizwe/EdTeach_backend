@@ -199,8 +199,8 @@ const leaveChallenge = async (req, res) => {
   const { challengeId, userId } = req.params;
 
   try {
-    const user = User.findById(userId);
-    const challenge = Challenge.findById(challengeId);
+    const user = await User.findById(userId);
+    const challenge = await Challenge.findById(challengeId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -238,5 +238,5 @@ export {
   findChallenges,
   joinChallenge,
   getUsersInChallenge,
-  leaveChallenge
+  leaveChallenge,
 };
