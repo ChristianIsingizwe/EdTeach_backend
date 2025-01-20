@@ -7,6 +7,8 @@ import {
   joinChallenge,
   leaveChallenge,
 } from "../controllers/challengeController.js";
+import checkChallengeStatus from "../middlewares/checkChallengeStatus.js";
+import authorize from "../middlewares/authorization.js";
 
 const router = Router();
 
@@ -33,9 +35,14 @@ const router = Router();
  *   "projectTasks": ["Design UI", "Implement backend"],
  * }
  */
-router.post("/create", createChallenge);
-router.post("/join/:userId/:challengeId", joinChallenge);
-router.post("/leave/:userId/:challengeId", leaveChallenge)
+router.post("/create", authorize("admin"), createChallenge);
+router.post(
+  "/join/:userId/:challengeId",
+  authorize(),
+  checkChallengeStatus,
+  joinChallenge
+);
+router.post("/leave/:userId/:challengeId", authorize(), leaveChallenge);
 
 /**
  * @route PUT /challenges/update
@@ -50,8 +57,8 @@ router.post("/leave/:userId/:challengeId", leaveChallenge)
  *   }
  * }
  */
-router.get("/getUsersJoined/:id", getUsersInChallenge);
-router.patch("/update/:id", editChallenge);
+router.get("/getUsersJoined/:id", authorize("admin"), getUsersInChallenge);
+router.patch("/update/:id", authorize("admin"), editChallenge);
 
 /**
  * @route DELETE /challenges/delete
@@ -64,6 +71,6 @@ router.patch("/update/:id", editChallenge);
  * }
  */
 
-router.delete("/delete/:id", deleteChallenge);
+router.delete("/delete/:id", authorize("admin"), deleteChallenge);
 
 export default router;

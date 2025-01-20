@@ -125,17 +125,17 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const otp = randomBytes(3).toString('hex')
-    user.otp = otp; 
-    user.otpExpiration = Date.now() + 5*60*1000;
+    const otp = randomBytes(3).toString("hex");
+    user.otp = otp;
+    user.otpExpiration = Date.now() + 5 * 60 * 1000;
 
-    await user.save()
-    await sendOTP(user.email, otp)
+    await user.save();
+    await sendOTP(user.email, otp);
 
     // Return the user data along with the generated tokens.
     res.status(200).json({
-      email: user.email, 
-      message: "Verify your email for the OTP"
+      email: user.email,
+      message: "Verify your email for the OTP",
     });
   } catch (error) {
     console.error("An error occurred: ", error);
@@ -345,4 +345,12 @@ const updateUser = async (req, res) => {
   });
 };
 
-export { registerUser, loginUser, findUser, findUsers, updateUser, deleteUser, verifyOTP };
+export {
+  registerUser,
+  loginUser,
+  findUser,
+  findUsers,
+  updateUser,
+  deleteUser,
+  verifyOTP,
+};

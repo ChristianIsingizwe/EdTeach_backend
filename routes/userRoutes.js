@@ -8,15 +8,16 @@ import {
   updateUser,
   verifyOTP,
 } from "../controllers/userController.js";
+import authorize from "../middlewares/authorization.js";
 
 const router = Router();
 
-router.get("/", findUsers);
+router.get("/", authorize(), findUsers);
 router.post("/login", loginUser);
 router.post("/register", registerUser);
 router.post("/verifyOtp", verifyOTP);
-router.get("/:id", findUser);
-router.patch("/updateUser/:id", updateUser);
-router.delete("/delete/:id", deleteUser);
+router.get("/:id", authorize(), findUser);
+router.patch("/updateUser/:id", authorize(), updateUser);
+router.delete("/delete/:id", authorize(), deleteUser);
 
 export default router;
