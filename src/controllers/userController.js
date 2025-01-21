@@ -16,6 +16,7 @@ import {
   generateRefreshToken,
 } from "../utils/generateTokens";
 import { sendOTP } from "../utils/sendOtp";
+import ensureUploadDir from "../utils/ensureFolderExist";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -70,7 +71,7 @@ const registerUser = async (req, res) => {
         message: "Failed to send OTP. Registration could not be completed.",
       });
     }
- 
+
     await newUser.save();
 
     return res.status(201).json({
@@ -146,7 +147,7 @@ const verifyOTP = async (req, res) => {
     user.otp = null;
     user.otpExpiration = null;
     await user.save();
-    
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: "Strict",
@@ -159,8 +160,6 @@ const verifyOTP = async (req, res) => {
       email: user.email,
       accessToken,
     });
-
-
   } catch (error) {
     console.error("Error verifying OTP: ", error);
     res.status(500).json({ message: "Internal server error" });
@@ -218,7 +217,7 @@ const updateUser = async (req, res) => {
       ];
       return allowedMimeTypes.includes(mimetype);
     },
-    uploadDir: path.join(__dirname, "../uploads"),
+    uploadDir: ensureUploadDir(path.join(__dirname, "../uploads")),
     keepExtensions: true,
   });
 
@@ -229,10 +228,7 @@ const updateUser = async (req, res) => {
     }
 
     try {
-      const { error } = updateUserFieldsSchema.validate(fields);
-      if (error) {
-        return res.status(400).json({ error: error.details[0].message });
-      }
+      console.log(fields);
 
       const { id } = req.params;
       const user = await User.findById(id);
