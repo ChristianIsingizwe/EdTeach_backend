@@ -2,7 +2,7 @@ import User from "../models/userModel.js"; // Importing User model to interact w
 import {
   registerUserSchema,
   loginSchema,
-  updateUserFieldsSchema
+  updateUserFieldsSchema,
 } from "../joiSchemas/userSchemas.js";
 import { hashPassword, verifyPassword } from "../utils/passwordHelper.js"; // Importing utility functions to hash and verify passwords.
 import {
@@ -58,8 +58,8 @@ const registerUser = async (req, res) => {
     // Hash the password before storing it in the database.
     const hashedPassword = await hashPassword(password);
 
-    // Create a new user in the database with the provided data.
-    const newUser = await User.create({
+    // Create a new user instance but do not save it yet.
+    const newUser = new User({
       firstName,
       lastName,
       email,
@@ -67,20 +67,31 @@ const registerUser = async (req, res) => {
       role,
     });
 
-    const otp = randomBytes(3).toString("hex"); // Generate OTP
-    newUser.otp = otp;
+    try {
+      // Generate OTP and expiration time.
+      const otp = randomBytes(3).toString("hex");
+      newUser.otp = otp;
+      newUser.otpExpiration = Date.now() + 5 * 60 * 1000;
 
-    newUser.otpExpiration = Date.now() + 5 * 60 * 1000;
+      // Attempt to send OTP.
+      await sendOTP(email, otp);
 
-    await newUser.save();
+      // Save the user to the database only if the OTP was sent successfully.
+      await newUser.save();
 
-    await sendOTP(email, otp);
+      // Return the user data along with the generated tokens.
+      res.status(201).json({
+        email,
+        message: "User registered successfully. Please check your email.",
+      });
+    } catch (otpError) {
+      console.error("Error sending OTP: ", otpError);
 
-    // Return the user data along with the generated tokens.
-    res.status(201).json({
-      email,
-      message: "User registered successfully please check your email",
-    });
+      // Explicitly avoid saving the user if sending OTP fails.
+      return res.status(500).json({
+        message: "Failed to send OTP. Registration could not be completed.",
+      });
+    }
   } catch (error) {
     // Log any unexpected errors and return a 500 status.
     console.error("An error occurred while registering the user: ", error);
