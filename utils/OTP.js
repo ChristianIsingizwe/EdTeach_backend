@@ -67,3 +67,5 @@ const sendOTP = async (email, otp) => {
     console.error("Error sending OTP: ", error);
   }
 };
+
+export default sendOTP;
