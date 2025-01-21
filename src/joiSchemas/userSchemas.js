@@ -67,20 +67,22 @@ const updateUserFieldsSchema = Joi.object({
     .min(8)
     .optional(), // The new password is optional and must meet the specified pattern.
 
-  profilePicture: Joi.string().custom((value, helpers) =>{
-    const allowedMimeTypes = [        
-      "image/jpeg",
-      "image/png",
-      "image/tiff",
-      "image/bmp",
-      "image/gif",
-      "image/svg+xml"
-    ]
-    if (!allowedMimeTypes.includes(value)){
-      helpers.error("any.invalid")
-    }
-    return value
-  }).optional()  
+  profilePicture: Joi.string()
+    .custom((value, helpers) => {
+      const allowedMimeTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/tiff",
+        "image/bmp",
+        "image/gif",
+        "image/svg+xml",
+      ];
+      if (!allowedMimeTypes.includes(value)) {
+        helpers.error("any.invalid");
+      }
+      return value;
+    })
+    .optional(),
 });
 
 export { registerUserSchema, loginSchema, updateUserFieldsSchema };

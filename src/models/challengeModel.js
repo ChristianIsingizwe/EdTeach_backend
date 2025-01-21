@@ -1,20 +1,5 @@
 import { Schema, model } from "mongoose";
 
-/**
- * @typedef {Object} Challenge
- * @property {string} title - The title of the challenge.
- * @property {Date} deadline - The deadline for the challenge; must be in the future.
- * @property {number} duration - The duration of the challenge in days.
- * @property {number} moneyPrize - The monetary prize for the challenge, must be non-negative.
- * @property {string} status - The status of the challenge. Can be "open", "ongoing", or "completed".
- * @property {string} contactEmail - The contact email for inquiries about the challenge.
- * @property {string} projectDescription - A detailed description of the project.
- * @property {string} projectBrief - A brief overview of the project.
- * @property {string[]} projectTasks - A list of tasks required for the project.
- * @property {ObjectId[]} participants - References to users participating in the challenge.
- * @property {Date} createdAt - The timestamp for when the document was created.
- * @property {Date} updatedAt - The timestamp for when the document was last updated.
- */
 
 /**
  * Schema representing a challenge on the platform.

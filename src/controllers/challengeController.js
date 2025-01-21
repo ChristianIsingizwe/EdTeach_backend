@@ -1,10 +1,10 @@
-import Challenge from "../models/challengeModel.js";
+import Challenge from "../models/challengeModel";
 import {
   createChallengeSchema,
   editChallengeSchema,
-} from "../joiSchemas/challengeSchemas.js";
+} from "../joiSchemas/challengeSchemas";
 import _ from "lodash";
-import User from "../models/userModel.js";
+import User from "../models/userModel";
 
 const createChallenge = async (req, res) => {
   try {
@@ -159,9 +159,8 @@ const getUsersInChallenge = async (req, res) => {
       });
     }
 
-    const challenge = await Challenge.findById(challengeId).populate(
-      "participants"
-    );
+    const challenge =
+      await Challenge.findById(challengeId).populate("participants");
 
     if (!challenge) {
       return res.status(404).json({

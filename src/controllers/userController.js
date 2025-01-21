@@ -1,21 +1,23 @@
-import User from "../models/userModel.js"; // Importing User model to interact with the database.
+import fs from "fs";
+import _ from "lodash";
+import formidable from "formidable";
+import path from "path";
+import { randomBytes } from "crypto";
+
+import User from "../models/userModel";
 import {
   registerUserSchema,
   loginSchema,
   updateUserFieldsSchema,
-} from "../joiSchemas/userSchemas.js";
-import { hashPassword, verifyPassword } from "../utils/passwordHelper.js"; // Importing utility functions to hash and verify passwords.
+} from "../joiSchemas/userSchemas";
+import { hashPassword, verifyPassword } from "../utils/passwordHelper";
 import {
   generateAccessToken,
   generateRefreshToken,
-} from "../utils/generateTokens.js"; // Importing functions for token generation.
-import _ from "lodash";
-import formidable from "formidable";
-import path from "path";
-import { validateFile } from "../utils/imageHelpers.js";
-import fs from "fs";
-import { randomBytes } from "crypto";
-import sendOTP from "../utils/OTP.js";
+} from "../utils/generateTokens";
+import { validateFile } from "../utils/imageHelpers";
+import { sendOTP } from "../utils/sendOtp";
+
 /**
  * Controller to handle user registration.
  *
@@ -40,7 +42,6 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: errorMessages });
     }
 
-    // Destructure the validated values.
     const { firstName, lastName, email, password, role } = _.pick(value, [
       "firstName",
       "lastName",
@@ -49,7 +50,7 @@ const registerUser = async (req, res) => {
       "role",
     ]);
 
-    // Check if a user with the same email already exists in the database.
+
     const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
       return res.status(400).json({ message: "User already exists." });
@@ -68,22 +69,11 @@ const registerUser = async (req, res) => {
     });
 
     try {
-      // Generate OTP and expiration time.
       const otp = randomBytes(3).toString("hex");
       newUser.otp = otp;
       newUser.otpExpiration = Date.now() + 5 * 60 * 1000;
 
-      // Attempt to send OTP.
       await sendOTP(email, otp);
-
-      // Save the user to the database only if the OTP was sent successfully.
-      await newUser.save();
-
-      // Return the user data along with the generated tokens.
-      res.status(201).json({
-        email,
-        message: "User registered successfully. Please check your email.",
-      });
     } catch (otpError) {
       console.error("Error sending OTP: ", otpError);
 
@@ -92,6 +82,13 @@ const registerUser = async (req, res) => {
         message: "Failed to send OTP. Registration could not be completed.",
       });
     }
+
+    await newUser.save();
+
+    return res.status(201).json({
+      email,
+      message: "User registered successfully. Please check your email.",
+    });
   } catch (error) {
     // Log any unexpected errors and return a 500 status.
     console.error("An error occurred while registering the user: ", error);
@@ -350,9 +347,9 @@ const updateUser = async (req, res) => {
       });
     } catch (error) {
       console.error("Error updating user profile:", error);
-      res
-        .status(500)
-        .json({ error: "An error occurred while updating the profile." });
+      res.status(500).json({
+        error: "An error occurred while updating the profile.",
+      });
     }
   });
 };

@@ -92,11 +92,11 @@ const userSchema = new Schema(
     },
     otp: {
       type: String,
-      default: null
+      default: null,
     },
-    otpExpiration:{
-      type: Date, 
-      default: null
+    otpExpiration: {
+      type: Date,
+      default: null,
     },
     /**
      * References to the challenges the user has joined.
