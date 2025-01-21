@@ -1,8 +1,8 @@
-import fs from "fs";
 import _ from "lodash";
 import formidable from "formidable";
 import path from "path";
 import { randomBytes } from "crypto";
+import cloudinary from "cloudinary";
 
 import User from "../models/userModel";
 import {
@@ -15,28 +15,20 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generateTokens";
-import { validateFile } from "../utils/imageHelpers";
 import { sendOTP } from "../utils/sendOtp";
 
-/**
- * Controller to handle user registration.
- *
- * This function validates the registration data, checks if the user already exists, hashes the password,
- * creates a new user in the database, and generates access and refresh tokens.
- *
- * @param {Object} req - The request object containing the user data.
- * @param {Object} res - The response object to send the response to the client.
- * @returns {Object} - The response object with the status and user data (with tokens).
- */
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const registerUser = async (req, res) => {
   try {
-    // Validate the registration data using the registerUserSchema.
     const { error, value } = registerUserSchema.validate(req.body, {
-      abortEarly: false, // Collect all validation errors instead of stopping at the first error.
+      abortEarly: false,
     });
 
-    // If validation fails, return 400 status with error messages.
     if (error) {
       const errorMessages = error.details.map((detail) => detail.message);
       return res.status(400).json({ error: errorMessages });
@@ -50,16 +42,13 @@ const registerUser = async (req, res) => {
       "role",
     ]);
 
-
     const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
       return res.status(400).json({ message: "User already exists." });
     }
 
-    // Hash the password before storing it in the database.
     const hashedPassword = await hashPassword(password);
 
-    // Create a new user instance but do not save it yet.
     const newUser = new User({
       firstName,
       lastName,
@@ -77,7 +66,6 @@ const registerUser = async (req, res) => {
     } catch (otpError) {
       console.error("Error sending OTP: ", otpError);
 
-      // Explicitly avoid saving the user if sending OTP fails.
       return res.status(500).json({
         message: "Failed to send OTP. Registration could not be completed.",
       });
@@ -90,45 +78,29 @@ const registerUser = async (req, res) => {
       message: "User registered successfully. Please check your email.",
     });
   } catch (error) {
-    // Log any unexpected errors and return a 500 status.
     console.error("An error occurred while registering the user: ", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-/**
- * Controller to handle user login.
- *
- * This function validates the login data, checks if the user exists, verifies the password,
- * and generates access and refresh tokens.
- *
- * @param {Object} req - The request object containing the login data.
- * @param {Object} res - The response object to send the response to the client.
- * @returns {Object} - The response object with the status, user data, and generated tokens.
- */
 const loginUser = async (req, res) => {
   try {
-    // Validate the login data using the loginSchema.
     const { error, value } = loginSchema.validate(req.body, {
-      abortEarly: false, // Collect all validation errors.
+      abortEarly: false,
     });
 
-    // If validation fails, return 400 status with error messages.
     if (error) {
       const errorMessages = error.details.map((detail) => detail.message);
       return res.status(400).json({ error: errorMessages });
     }
 
-    // Destructure the validated values.
     const { email, password } = _.pick(value, ["email", "password"]);
 
-    // Check if the user with the provided email exists in the database.
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Verify if the provided password matches the stored password hash.
     const isPasswordCorrect = await verifyPassword(password, user.passwordHash);
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid credentials" });
@@ -141,7 +113,6 @@ const loginUser = async (req, res) => {
     await user.save();
     await sendOTP(user.email, otp);
 
-    // Return the user data along with the generated tokens.
     res.status(200).json({
       email: user.email,
       message: "Verify your email for the OTP",
@@ -154,19 +125,16 @@ const loginUser = async (req, res) => {
 
 const verifyOTP = async (req, res) => {
   try {
-    const { email, otp } = _.pick(req.body, ["email", "otp"]); // Get email and OTP from request body
-
+    const { email, otp } = _.pick(req.body, ["email", "otp"]);
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Check if OTP exists and is not expired
     if (!user.otp || user.otp !== otp || Date.now() > user.otpExpiration) {
       return res.status(400).json({ message: "Invalid or expired OTP." });
     }
 
-    // OTP is valid, generate access and refresh tokens
     const accessToken = generateAccessToken({
       userId: user._id,
       userRole: user.role,
@@ -176,14 +144,12 @@ const verifyOTP = async (req, res) => {
       user.tokenVersion
     );
 
-    // Store the refresh token in a cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: "Strict",
-      maxAge: 20 * 24 * 60 * 60 * 1000, // 20 days
+      maxAge: 20 * 24 * 60 * 60 * 1000,
     });
 
-    // Respond with the tokens and user data
     res.status(200).json({
       firstName: user.firstName,
       lastName: user.lastName,
@@ -191,7 +157,6 @@ const verifyOTP = async (req, res) => {
       accessToken,
     });
 
-    // Clear the OTP fields after successful verification
     user.otp = null;
     user.otpExpiration = null;
     await user.save();
@@ -205,7 +170,7 @@ const findUser = async (req, res) => {
   const { id } = req.params;
 
   const user = await User.findById(id).select(
-    "firstName lastName email profilePicture"
+    "firstName lastName email profilePictureUrl"
   );
   if (!user) {
     return res.status(404).json({ message: "User not found" });
@@ -216,7 +181,7 @@ const findUser = async (req, res) => {
 
 const findUsers = async (req, res) => {
   const users = await User.find().select(
-    "firstName lastName email profilePicture"
+    "firstName lastName email profilePictureUrl"
   );
   res.status(200).json({ users });
 };
@@ -239,8 +204,8 @@ const deleteUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const form = formidable({
-    multiples: false, // Single file upload
-    maxFileSize: 5 * 1024 * 1024, // 5 MB size limit
+    multiples: false,
+    maxFileSize: 1 * 1024 * 1024,
     filter: ({ mimetype }) => {
       const allowedMimeTypes = [
         "image/jpeg",
@@ -252,8 +217,8 @@ const updateUser = async (req, res) => {
       ];
       return allowedMimeTypes.includes(mimetype);
     },
-    uploadDir: path.join(__dirname, "../uploads"), // Temporary storage directory
-    keepExtensions: true, // Preserve file extensions
+    uploadDir: path.join(__dirname, "../uploads"),
+    keepExtensions: true,
   });
 
   form.parse(req, async (err, fields, files) => {
@@ -263,7 +228,6 @@ const updateUser = async (req, res) => {
     }
 
     try {
-      // Validate JSON fields
       const { error } = updateUserFieldsSchema.validate(fields);
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
@@ -275,7 +239,6 @@ const updateUser = async (req, res) => {
         return res.status(404).json({ error: "User not found." });
       }
 
-      // Update password if provided
       if (fields.currentPassword && fields.newPassword) {
         const isMatch = await verifyPassword(
           fields.currentPassword,
@@ -289,50 +252,23 @@ const updateUser = async (req, res) => {
         user.password = hashPassword(fields.newPassword);
       }
 
-      // Update other fields
       if (fields.firstName) user.firstName = fields.firstName;
       if (fields.lastName) user.lastName = fields.lastName;
 
-      // Handle profile picture if provided
       if (files.profilePicture) {
         const file = files.profilePicture;
 
-        // Validate file
-        validateFile(file, 5 * 1024 * 1024, [
-          "image/jpeg",
-          "image/png",
-          "image/tiff",
-          "image/bmp",
-          "image/gif",
-          "image/svg+xml",
-        ]);
+        const cloudinaryResponse = await cloudinary.uploader.upload(
+          file.filepath,
+          {
+            folder: "profile_pictures",
+            public_id: `user-${user._id}-${Date.now()}`,
+            resource_type: "image",
+            transformation: [{ width: 300, height: 300, crop: "limit" }],
+          }
+        );
 
-        const outputDir = path.join(__dirname, "../public/profile-pictures");
-        fs.mkdir(outputDir, { recursive: true });
-
-        if (
-          !["image/svg+xml", "image/gif", "image/bmp"].includes(file.mimetype)
-        ) {
-          // Resize and save image
-          const resizedImagePath = await resizeImage(
-            file.filepath,
-            path.join(outputDir, `user-${user._id}-${Date.now()}.jpeg`),
-            300
-          );
-          user.profilePictureUrl = `/profile-pictures/${path.basename(
-            resizedImagePath
-          )}`;
-        } else {
-          // Move file as is for non-resizable formats
-          const outputPath = path.join(
-            outputDir,
-            `user-${user._id}-${Date.now()}-${file.originalFilename}`
-          );
-          fs.rename(file.filepath, outputPath);
-          user.profilePictureUrl = `/profile-pictures/${path.basename(
-            outputPath
-          )}`;
-        }
+        user.profilePictureUrl = cloudinaryResponse.secure_url;
       }
 
       await user.save();
@@ -353,7 +289,6 @@ const updateUser = async (req, res) => {
     }
   });
 };
-
 export {
   registerUser,
   loginUser,
