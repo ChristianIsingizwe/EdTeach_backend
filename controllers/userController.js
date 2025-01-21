@@ -2,14 +2,14 @@ import User from "../models/userModel.js"; // Importing User model to interact w
 import {
   registerUserSchema,
   loginSchema,
-  updateUserSchema,
+  updateUserFieldsSchema
 } from "../joiSchemas/userSchemas.js";
 import { hashPassword, verifyPassword } from "../utils/passwordHelper.js"; // Importing utility functions to hash and verify passwords.
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generateTokens.js"; // Importing functions for token generation.
-import _, { random } from "lodash"; // Importing lodash to simplify object manipulation.
+import _ from "lodash";
 import formidable from "formidable";
 import path from "path";
 import { validateFile } from "../utils/imageHelpers.js";
@@ -26,6 +26,7 @@ import sendOTP from "../utils/OTP.js";
  * @param {Object} res - The response object to send the response to the client.
  * @returns {Object} - The response object with the status and user data (with tokens).
  */
+
 const registerUser = async (req, res) => {
   try {
     // Validate the registration data using the registerUserSchema.
@@ -66,7 +67,7 @@ const registerUser = async (req, res) => {
       role,
     });
 
-    const otp = randomBytes(3).toString("hex");
+    const otp = randomBytes(3).toString("hex"); // Generate OTP
     newUser.otp = otp;
 
     newUser.otpExpiration = Date.now() + 5 * 60 * 1000;
@@ -255,7 +256,7 @@ const updateUser = async (req, res) => {
 
     try {
       // Validate JSON fields
-      const { error } = updateUserSchema.validate(fields);
+      const { error } = updateUserFieldsSchema.validate(fields);
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
       }

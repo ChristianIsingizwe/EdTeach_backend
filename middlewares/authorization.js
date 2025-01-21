@@ -1,4 +1,4 @@
-import { verify } from "jsonwebtoken";
+import jwt from 'jsonwebtoken'
 import User from "../models/userModel.js";
 import { generateAccessToken } from "../utils/generateTokens.js";
 
@@ -11,7 +11,7 @@ const authorize = (requiredRole) => async (req, res, next) => {
     }
 
     try {
-      const decoded = verify(accessToken, process.env.ACCESS_TOKEN_SECRET_KEY);
+      const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET_KEY);
       req.user = { id: decoded.id, role: decoded.role };
 
       if (requiredRole && decoded.role !== requiredRole) {
@@ -57,7 +57,7 @@ const authorize = (requiredRole) => async (req, res, next) => {
     }
   } catch (error) {
     console.error("Authorization failed: ", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Failed to authorize the user." });
   }
 };
 
