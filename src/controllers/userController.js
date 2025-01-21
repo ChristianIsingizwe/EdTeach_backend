@@ -70,11 +70,10 @@ const registerUser = async (req, res) => {
         message: "Failed to send OTP. Registration could not be completed.",
       });
     }
-
+ 
     await newUser.save();
 
     return res.status(201).json({
-      email,
       message: "User registered successfully. Please check your email.",
     });
   } catch (error) {
@@ -144,6 +143,10 @@ const verifyOTP = async (req, res) => {
       user.tokenVersion
     );
 
+    user.otp = null;
+    user.otpExpiration = null;
+    await user.save();
+    
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: "Strict",
@@ -157,9 +160,7 @@ const verifyOTP = async (req, res) => {
       accessToken,
     });
 
-    user.otp = null;
-    user.otpExpiration = null;
-    await user.save();
+
   } catch (error) {
     console.error("Error verifying OTP: ", error);
     res.status(500).json({ message: "Internal server error" });
