@@ -230,7 +230,6 @@ const updateUser = async (req, res) => {
     }
 
     try {
-
       const normalizedFields = Object.fromEntries(
         Object.entries(fields).map(([key, value]) => [key, value[0]])
       );
@@ -255,7 +254,7 @@ const updateUser = async (req, res) => {
             .status(400)
             .json({ error: "Current password is incorrect." });
         }
-        user.password = hashPassword(normalizedFields.newPassword);
+        user.password = await hashPassword(normalizedFields.newPassword);
       }
 
       if (normalizedFields.firstName)
