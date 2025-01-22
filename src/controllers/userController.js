@@ -203,6 +203,8 @@ const deleteUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
+  const { id } = req.params;
+
   const form = formidable({
     multiples: false,
     maxFileSize: 1 * 1024 * 1024,
@@ -229,16 +231,27 @@ const updateUser = async (req, res) => {
 
     try {
       console.log(fields);
+      console.log(files);
 
-      const { id } = req.params;
+      const normalizedFields = Object.fromEntries(
+        Object.entries(fields).map(([key, value]) => [key, value[0]])
+      );
+
+      console.log(normalizedFields);
+
+      const { error } = updateUserFieldsSchema.validate(normalizedFields);
+      if (error) {
+        const errorMessages = error.details.map((detail) => detail.message);
+        return res.status(400).json({ error: errorMessages });
+      }
       const user = await User.findById(id);
       if (!user) {
         return res.status(404).json({ error: "User not found." });
       }
 
-      if (fields.currentPassword && fields.newPassword) {
+      if (normalizedFields.currentPassword && normalizedFields.newPassword) {
         const isMatch = await verifyPassword(
-          fields.currentPassword,
+          normalizedFields.currentPassword,
           user.passwordHash
         );
         if (!isMatch) {
@@ -246,14 +259,14 @@ const updateUser = async (req, res) => {
             .status(400)
             .json({ error: "Current password is incorrect." });
         }
-        user.password = hashPassword(fields.newPassword);
+        user.password = hashPassword(normalizedFields.newPassword);
       }
 
-      if (fields.firstName) user.firstName = fields.firstName;
-      if (fields.lastName) user.lastName = fields.lastName;
+      if (normalizedFields.firstName) user.firstName = normalizedFields.firstName;
+      if (normalizedFields.lastName) user.lastName = normalizedFields.lastName;
 
       if (files.profilePicture) {
-        const file = files.profilePicture;
+        const file = files.profilePicture[0];
 
         const cloudinaryResponse = await cloudinary.uploader.upload(
           file.filepath,

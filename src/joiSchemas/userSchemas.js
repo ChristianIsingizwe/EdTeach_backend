@@ -1,88 +1,59 @@
 import Joi from "joi";
 
-/**
- * Schema for validating the user registration data.
- * It ensures that the first name, last name, email, and password meet the required format and constraints.
- */
 const registerUserSchema = Joi.object({
   firstName: Joi.string()
     .min(2)
     .max(255)
     .regex(/^[A-Za-z]+$/)
-    .required(), // The first name must contain only alphabetic characters and be between 2-255 characters.
+    .required(),
   lastName: Joi.string()
     .min(2)
     .max(255)
     .regex(/^[A-Za-z]+$/)
-    .required(), // The last name must contain only alphabetic characters and be between 2-255 characters.
-  email: Joi.string().email().required(), // The email must be in a valid email format.
+    .required(),
+  email: Joi.string().email().required(),
   password: Joi.string()
     .pattern(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
     )
     .min(8)
-    .required(), // Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, a number, and a special character.
-  role: Joi.string().valid("user", "admin").default("user").optional(), // The role is optional and defaults to 'user'.
+    .required(),
+  role: Joi.string().valid("user", "admin").default("user").optional(),
 });
 
-/**
- * Schema for validating the user login data.
- * Ensures the email and password are provided and meet the required format.
- */
 const loginSchema = Joi.object({
-  email: Joi.string().email().required(), // The email must be in a valid email format.
+  email: Joi.string().email().required(),
   password: Joi.string()
     .pattern(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&/])[A-Za-z\d@$!%*?&]{8,}$/
     )
     .min(8)
-    .required(), // The password must be at least 8 characters long and contain specific characters.
+    .required(),
 });
 
-/**
- * Schema for validating the user update data.
- * It validates the user's first name, last name, and password changes.
- */
 const updateUserFieldsSchema = Joi.object({
   firstName: Joi.string()
     .min(3)
     .max(255)
     .regex(/^[A-Za-z]+$/)
-    .optional(), // The first name is optional and must be between 3-255 characters.
+    .optional(),
   lastName: Joi.string()
     .min(3)
     .max(255)
     .regex(/^[A-Za-z]+$/)
-    .optional(), // The last name is optional and must be between 3-255 characters.
+    .optional(),
   currentPassword: Joi.string()
     .pattern(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
     )
     .min(8)
-    .optional(), // The current password is optional and must meet the specified pattern.
+    .optional(),
   newPassword: Joi.string()
     .pattern(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
     )
     .min(8)
-    .optional(), // The new password is optional and must meet the specified pattern.
-
-  profilePicture: Joi.string()
-    .custom((value, helpers) => {
-      const allowedMimeTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/tiff",
-        "image/bmp",
-        "image/gif",
-        "image/svg+xml",
-      ];
-      if (!allowedMimeTypes.includes(value)) {
-        helpers.error("any.invalid");
-      }
-      return value;
-    })
     .optional(),
 });
 
-export { registerUserSchema, loginSchema, updateUserFieldsSchema };
+export { registerUserSchema, loginSchema, updateUserFieldsSchema }; 
