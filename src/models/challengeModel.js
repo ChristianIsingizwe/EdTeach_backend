@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
 
-
 /**
  * Schema representing a challenge on the platform.
  * A challenge is a competition or task that participants can join and complete within a specified deadline.

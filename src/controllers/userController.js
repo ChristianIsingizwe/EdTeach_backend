@@ -262,7 +262,8 @@ const updateUser = async (req, res) => {
         user.password = hashPassword(normalizedFields.newPassword);
       }
 
-      if (normalizedFields.firstName) user.firstName = normalizedFields.firstName;
+      if (normalizedFields.firstName)
+        user.firstName = normalizedFields.firstName;
       if (normalizedFields.lastName) user.lastName = normalizedFields.lastName;
 
       if (files.profilePicture) {

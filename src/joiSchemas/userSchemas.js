@@ -56,4 +56,4 @@ const updateUserFieldsSchema = Joi.object({
     .optional(),
 });
 
-export { registerUserSchema, loginSchema, updateUserFieldsSchema }; 
+export { registerUserSchema, loginSchema, updateUserFieldsSchema };

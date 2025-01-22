@@ -1,12 +1,10 @@
-import fs from 'fs';
+import fs from "fs";
 
-const ensureUploadDir = (dirPath) =>{
-    if (!fs.existsSync(dirPath)){
-        fs.mkdirSync(dirPath, {recursive: true});
-
-    }
-    return dirPath;
+const ensureUploadDir = (dirPath) => {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+  return dirPath;
 };
-
 
 export default ensureUploadDir;
