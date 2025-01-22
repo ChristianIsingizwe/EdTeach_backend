@@ -4,18 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "babel src -d dist",
+    "build": "babel src -d dist && pnpm sentry:sourcemaps",
     "start": "node dist/index.js",
     "watch": "babel src -d dist --watch",
     "format": "prettier . -w",
     "lint": "eslint .",
     "dev": "concurrently \"babel src -d dist --watch\" \"nodemon dist/index.js\"",
-    "test": "jest --watchAll --verbose"
+    "test": "jest --watchAll --verbose",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org umurava-experimental --project umurava_backend ./dist  && sentry-cli sourcemaps upload --org umurava-experimental --project umurava_backend ./dist "
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sentry/cli": "^2.41.1",
+    "@sentry/node": "^8.50.0",
+    "@sentry/profiling-node": "^8.50.0",
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
