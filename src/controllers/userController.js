@@ -230,14 +230,10 @@ const updateUser = async (req, res) => {
     }
 
     try {
-      console.log(fields);
-      console.log(files);
 
       const normalizedFields = Object.fromEntries(
         Object.entries(fields).map(([key, value]) => [key, value[0]])
       );
-
-      console.log(normalizedFields);
 
       const { error } = updateUserFieldsSchema.validate(normalizedFields);
       if (error) {
