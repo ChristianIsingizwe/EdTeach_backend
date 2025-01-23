@@ -140,57 +140,11 @@ const joinChallenge = async (req, res) => {
 
     res.status(200).json({
       message: "Successfully joined the challenge",
-      userId,
-      challengeId,
+      challenge,
     });
   } catch (error) {
     console.error("An error occurred: ", error);
     res.status(500).json({ message: "Internal server error." });
-  }
-};
-
-const getUsersInChallenge = async (req, res) => {
-  try {
-    const { challengeId } = req.params;
-
-    if (!challengeId) {
-      return res.status(400).json({
-        error: "Challenge ID is required.",
-      });
-    }
-
-    const challenge =
-      await Challenge.findById(challengeId).populate("participants");
-
-    if (!challenge) {
-      return res.status(404).json({
-        error: "Challenge not found.",
-      });
-    }
-
-    const users = challenge.participants;
-
-    if (users.length === 0) {
-      return res.status(200).json({
-        message: "No users have joined this challenge yet.",
-      });
-    }
-
-    res.status(200).json({
-      message: "Users who have joined the challenge.",
-      users: users.map((user) => ({
-        userId: user._id,
-        name: user.name,
-        email: user.email,
-        profilePicture: user.profilePicture,
-      })),
-    });
-  } catch (error) {
-    console.error("Error fetching users in challenge:", error);
-    res.status(500).json({
-      error: "An error occurred while fetching users.",
-      details: error.message,
-    });
   }
 };
 
@@ -236,6 +190,5 @@ export {
   findChallenge,
   findChallenges,
   joinChallenge,
-  getUsersInChallenge,
   leaveChallenge,
 };

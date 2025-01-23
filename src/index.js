@@ -1,12 +1,12 @@
+import "../instrument";
 import "dotenv/config";
+import * as Sentry from "@sentry/node";
 import express from "express";
 import cors from "cors";
-import * as Sentry from "@sentry/node";
 
 import connectToDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import challengeRoutes from "./routes/challengeRoutes";
-import "../instrument.mjs";
 
 const app = express();
 
