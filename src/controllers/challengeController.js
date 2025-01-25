@@ -5,6 +5,13 @@ import {
 } from "../joiSchemas/challengeSchemas";
 import _ from "lodash";
 import User from "../models/userModel";
+import {
+  deleteCachedData,
+  getCachedData,
+  setCachedData,
+} from "../utils/caching ";
+
+const cacheKeyForAllChallenges = `challenges:all`;
 
 const createChallenge = async (req, res) => {
   try {
@@ -24,6 +31,7 @@ const createChallenge = async (req, res) => {
 
     const newChallenge = new Challenge(value);
     await newChallenge.save();
+    await deleteCachedData(cacheKeyForAllChallenges);
     res.status(201).json({
       message: "Challenge created successfully",
       challenge: newChallenge,
@@ -57,6 +65,11 @@ const editChallenge = async (req, res) => {
       return res.status(404).json({ error: "Challenge not found" });
     }
 
+    const cacheKey = `challenge:${id}`;
+    await setCachedData(cacheKey, updateChallenge);
+
+    await deleteCachedData(cacheKeyForAllChallenges);
+
     res.status(200).json({
       message: "Challenge updated successfully.",
       challenge: updateChallenge,
@@ -75,6 +88,9 @@ const deleteChallenge = async (req, res) => {
     if (!deletedChallenge) {
       return res.status(404).json({ message: "Challenge not found" });
     }
+
+    await deleteCachedData(`challenge:${id}`);
+    await deleteCachedData(cacheKeyForAllChallenges);
     res.status(200).json({
       message: "Challenge deleted successfully",
       challenge: deletedChallenge,
@@ -87,22 +103,43 @@ const deleteChallenge = async (req, res) => {
 
 const findChallenge = async (req, res) => {
   const { id } = req.params;
+  const cacheKey = `challenge:${id}`;
 
-  const challenge = await Challenge.findById(id);
-  if (!challenge) {
-    return res.status(404).json({ message: "Internal server error" });
+  try {
+    const cachedChallenge = await getCachedData(cacheKey);
+    if (cachedChallenge) {
+      return res.status(200).json({ challenge: cachedChallenge });
+    }
+    const challenge = await Challenge.findById(id);
+    if (!challenge) {
+      return res.status(404).json({ message: "Internal server error" });
+    }
+    await setCachedData(cacheKey, challenge);
+    res.status(200).json({ challenge });
+  } catch (error) {
+    console.error("An error occurred: ", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-
-  res.status(200).json({ challenge });
 };
 
 const findChallenges = async (req, res) => {
-  const challenges = await Challenge.find();
-  if (!challenges) {
-    return res.status(404).json({ message: "No challenge found" });
-  }
+  try {
+    const cachedChallenges = await getCachedData(cacheKeyForAllChallenges);
+    if (cachedChallenges) {
+      return res.status(200).json({ challenges: cachedChallenges });
+    }
 
-  res.status(200).json({ challenges });
+    const challenges = await Challenge.find();
+    if (!challenges) {
+      return res.status(404).json({ message: "No challenges found" });
+    }
+
+    await setCachedData(cacheKey, challenges);
+    res.status(200).json({ challenges });
+  } catch (error) {
+    console.error("An error occurred: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 const joinChallenge = async (req, res) => {
