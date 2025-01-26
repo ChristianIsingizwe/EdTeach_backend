@@ -10,13 +10,22 @@ import {
 } from "../controllers/challengeController.js";
 import authorize from "../middlewares/authorization.js";
 import checkChallengeStatus from "../middlewares/checkChallengeStatus.js";
+import cacheMiddlware from "../middlewares/cacheMiddleware.js";
 
 const router = Router();
 
-router.get("/", findChallenges);
+router.get(
+  "/",
+  cacheMiddlware(() => `challenge:all`),
+  findChallenges
+);
 router.post("/create", authorize("admin"), createChallenge);
 router.patch("/edit", authorize("admin"), editChallenge);
-router.get("/:id", findChallenge);
+router.get(
+  "/:id",
+  cacheMiddlware(() => `challenge:${req.params.id}`),
+  findChallenge
+);
 router.put(
   "/join/:userId/:challengeId",
   authorize(),
