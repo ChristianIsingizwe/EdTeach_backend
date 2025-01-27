@@ -8,12 +8,14 @@ import { Redis } from "ioredis";
 import connectToDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import challengeRoutes from "./routes/challengeRoutes";
+import { generalRateLimiter } from "./middlewares/rateLimiting";
 
 const app = express();
 export const redis = new Redis();
 
 app.use(cors());
 app.use(express.json());
+app.use(generalRateLimiter);
 app.use("/api/users/", userRoutes);
 app.use("/api/challenges", challengeRoutes);
 
