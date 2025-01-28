@@ -24,14 +24,18 @@ router.get(
   cacheMiddlware(() => `challenge:all`),
   findChallenges
 );
+
 router.post("/create", authorize("admin"), adminRateLimiter, createChallenge);
-router.patch("/edit", authorize("admin"), adminRateLimiter, editChallenge);
+
+router.patch("/edit/:id", authorize("admin"), adminRateLimiter, editChallenge);
+
 router.get(
   "/:id",
   generalRateLimiter,
   cacheMiddlware(() => `challenge:${req.params.id}`),
   findChallenge
 );
+
 router.put(
   "/join/:userId/:challengeId",
   authorize("user"),
@@ -39,12 +43,14 @@ router.put(
   checkChallengeStatus,
   joinChallenge
 );
+
 router.delete(
   "/leave/:userId/:challengeId",
   authorize("user"),
   generalRateLimiter,
   leaveChallenge
 );
+
 router.delete(
   "/delete/:id",
   authorize("admin"),

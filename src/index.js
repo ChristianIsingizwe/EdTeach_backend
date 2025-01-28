@@ -4,34 +4,16 @@ import * as Sentry from "@sentry/node";
 import express from "express";
 import cors from "cors";
 import { Redis } from "ioredis";
-import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./docs/swaggerConfig";
 
 import connectToDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import challengeRoutes from "./routes/challengeRoutes";
 import { generalRateLimiter } from "./middlewares/rateLimiting";
 
-const options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Umurava API",
-      version: "1.0.0",
-      description: `This is an the API for the umurava challenges platform which is and edTech platform that aims to improve the skills of people through challenges`,
-    },
-    servers: [
-      {
-        url: "http://localhost:5001",
-      },
-    ],
-  },
-  apis: ["./routes/*.js"],
-};
-
 const app = express();
 const redis = new Redis();
-const swaggerSpec = swaggerJSDoc(options);
 
 app.use(cors());
 app.use(express.json());

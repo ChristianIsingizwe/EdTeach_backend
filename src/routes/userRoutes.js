@@ -20,7 +20,12 @@ router.post("/login", authRateLimiter, loginUser);
 router.post("/register", authRateLimiter, registerUser);
 router.post("/verifyOtp", authRateLimiter, verifyOTP);
 router.get("/:id", authorize("user"), generalRateLimiter, findUser);
-router.patch("/updateUser/:id", authorize("user"), generalRateLimiter, updateUser);
+router.patch(
+  "/updateUser/:id",
+  authorize("user"),
+  generalRateLimiter,
+  updateUser
+);
 router.delete("/delete/:id", authorize("user"), authRateLimiter, deleteUser);
 
 export default router;
