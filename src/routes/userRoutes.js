@@ -12,15 +12,15 @@ import authorize from "../middlewares/authorization.js";
 import {
   authRateLimiter,
   generalRateLimiter,
-} from "../middlewares/cacheMiddleware.js";
+} from "../middlewares/rateLimiting.js";
 const router = Router();
 
-router.get("/", authorize(), generalRateLimiter, findUsers);
+router.get("/", authorize("user"), generalRateLimiter, findUsers);
 router.post("/login", authRateLimiter, loginUser);
 router.post("/register", authRateLimiter, registerUser);
 router.post("/verifyOtp", authRateLimiter, verifyOTP);
-router.get("/:id", authorize(), generalRateLimiter, findUser);
-router.patch("/updateUser/:id", authorize(), generalRateLimiter, updateUser);
-router.delete("/delete/:id", authorize(), authRateLimiter, deleteUser);
+router.get("/:id", authorize("user"), generalRateLimiter, findUser);
+router.patch("/updateUser/:id", authorize("user"), generalRateLimiter, updateUser);
+router.delete("/delete/:id", authorize("user"), authRateLimiter, deleteUser);
 
 export default router;

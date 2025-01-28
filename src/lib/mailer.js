@@ -7,7 +7,7 @@ class Mailer {
     if (!process.env.GOOGLE_REFRESH_TOKEN) {
       throw new Error(
         "Google refresh token is missing. Set GOOGLE_REFRESH_TOKEN in environment variables."
-      ); 
+      );
     }
 
     this.oauth2Client = new google.auth.OAuth2(

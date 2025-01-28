@@ -34,14 +34,14 @@ router.get(
 );
 router.put(
   "/join/:userId/:challengeId",
-  authorize(),
+  authorize("user"),
   generalRateLimiter,
   checkChallengeStatus,
   joinChallenge
 );
 router.delete(
   "/leave/:userId/:challengeId",
-  authorize(),
+  authorize("user"),
   generalRateLimiter,
   leaveChallenge
 );
