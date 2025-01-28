@@ -16,9 +16,9 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Your API Title",
+      title: "Umurava API",
       version: "1.0.0",
-      description: "Description of your API",
+      description: `This is an the API for the umurava challenges platform which is and edTech platform that aims to improve the skills of people through challenges`,
     },
     servers: [
       {
@@ -36,8 +36,8 @@ const swaggerSpec = swaggerJSDoc(options);
 app.use(cors());
 app.use(express.json());
 app.use(generalRateLimiter);
-app.use("/api/users/", userRoutes);
-app.use("/api/challenges", challengeRoutes);
+app.use("/api/v1/users/", userRoutes);
+app.use("/api/v1/challenges", challengeRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 Sentry.setupExpressErrorHandler(app);
