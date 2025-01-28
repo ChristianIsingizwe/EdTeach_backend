@@ -5,7 +5,7 @@ import express from "express";
 import cors from "cors";
 import { Redis } from "ioredis";
 import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./docs/swaggerConfig";
+import path from "path";
 
 import connectToDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
@@ -20,7 +20,11 @@ app.use(express.json());
 app.use(generalRateLimiter);
 app.use("/api/v1/users/", userRoutes);
 app.use("/api/v1/challenges", challengeRoutes);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(
+  "/api/v1/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(path.join(__dirname, "docs", "swagger.json"))
+);
 
 Sentry.setupExpressErrorHandler(app);
 app.use(function onError(err, req, res, next) {
