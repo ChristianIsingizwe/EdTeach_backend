@@ -14,6 +14,7 @@ import { generalRateLimiter } from "./middlewares/rateLimiting";
 
 const app = express();
 const redis = new Redis();
+const swaggerDocument = path.join(__dirname, "docs", "swagger.json");
 
 app.use(cors());
 app.use(express.json());
@@ -21,9 +22,9 @@ app.use(generalRateLimiter);
 app.use("/api/v1/users/", userRoutes);
 app.use("/api/v1/challenges", challengeRoutes);
 app.use(
-  "/api/v1/docs",
+  "/api-docs",
   swaggerUi.serve,
-  swaggerUi.setup(path.join(__dirname, "docs", "swagger.json"))
+  swaggerUi.setup(require(swaggerDocument))
 );
 
 Sentry.setupExpressErrorHandler(app);
