@@ -1,8 +1,16 @@
-import * as userService from "../services/userService.js";
+import {
+  registerUserService,
+  loginUserService,
+  verifyOTPService,
+  findUserService,
+  findUsersService,
+  deleteUserService,
+  updateUserService,
+} from "../services/userService.js";
 
 const registerUser = async (req, res) => {
   try {
-    const response = await userService.registerUser(req.body);
+    const response = await registerUserService(req.body);
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("An error occurred while registering the user: ", error);
@@ -12,7 +20,8 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const response = await userService.loginUser(req.body);
+    const value = _.pick(req.body, ["email", "password"]);
+    const response = await loginUserService(value);
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("An error occurred during login: ", error);
@@ -22,7 +31,7 @@ const loginUser = async (req, res) => {
 
 const verifyOTP = async (req, res) => {
   try {
-    const response = await userService.verifyOTP(req.body);
+    const response = await verifyOTPService(req.body);
     if (response.cookies) {
       res.cookie(
         "refreshToken",
@@ -39,7 +48,7 @@ const verifyOTP = async (req, res) => {
 
 const findUser = async (req, res) => {
   try {
-    const response = await userService.findUser(req.params.id);
+    const response = await findUserService(req.params.id);
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error finding user: ", error);
@@ -49,7 +58,7 @@ const findUser = async (req, res) => {
 
 const findUsers = async (req, res) => {
   try {
-    const response = await userService.findUsers();
+    const response = await findUsersService();
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error finding users: ", error);
@@ -59,7 +68,7 @@ const findUsers = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    const response = await userService.deleteUser(req.params.id);
+    const response = await deleteUserService(req.params.id);
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error deleting user: ", error);
@@ -69,7 +78,7 @@ const deleteUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const response = await userService.updateUser(req);
+    const response = await updateUserService(req);
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error updating user profile:", error);

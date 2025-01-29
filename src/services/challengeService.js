@@ -4,7 +4,7 @@ import {
   deleteCachedData,
   getCachedData,
   setCachedData,
-} from "../utils/caching";
+} from "../utils/caching ";
 
 const cacheKeyForAllChallenges = `challenges:all`;
 
