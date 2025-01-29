@@ -1,687 +1,666 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-        "title": "Umurava API documentation",
-        "description": "API documentation for the umurava platform. ",
-        "version": "1.0.0"
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Umurava API documentation",
+    "description": "API documentation for the umurava platform. ",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5001/api/v1",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Authorization header using the Bearer scheme."
+      }
     },
-    "servers": [
-        {
-            "url": "http://localhost:5001/api/v1",
-            "description": "Local development server"
-        }
-    ],
-    "components": {
-        "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT",
-                "description": "JWT Authorization header using the Bearer scheme."
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "passwordHash": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["user", "admin"]
+          },
+          "profilePictureUrl": {
+            "type": "string",
+            "default": "https://www.gravatar.com/avatar/?d=mp"
+          },
+          "tokenVersion": {
+            "type": "integer"
+          },
+          "otp": {
+            "type": "string"
+          },
+          "otpExpiration": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "joinedChallenges": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
             }
+          }
         },
-        "schemas": {
-            "User": {
+        "required": ["firstName", "lastName", "email", "role", "passwordHash"]
+      },
+      "Challenge": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "moneyPrize": {
+            "type": "string"
+          },
+          "challengeStatus": {
+            "type": "string",
+            "enum": ["open", "ongoing", "completed"]
+          },
+          "contactEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "projectDescription": {
+            "type": "string"
+          },
+          "projectBrief": {
+            "type": "string"
+          },
+          "projectTasks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "deadline",
+          "duration",
+          "moneyPrize",
+          "challengeStatus",
+          "contactEmail",
+          "projectDescription",
+          "projectBrief",
+          "projectTasks"
+        ]
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "error": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "statusCode": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Retrieve a list of users",
+        "description": "Fetches all users from the database, but only returns selected user attributes (firstName, lastName, email, profilePictureUrl). Requires user authorization.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of users with selected attributes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email"
+                          },
+                          "profilePictureUrl": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "firstName",
+                          "lastName",
+                          "email",
+                          "profilePictureUrl"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "summary": "Login a user",
+        "description": "Logs in a user and generates an OTP for verification.",
+        "responses": {
+          "200": {
+            "description": "User login successful. An OTP will be sent to the user’s email."
+          },
+          "400": {
+            "description": "Invalid credentials"
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/users/register": {
+      "post": {
+        "summary": "Register a new user",
+        "description": "Registers a new user in the system and sends an OTP to the user's email.",
+        "responses": {
+          "201": {
+            "description": "User registered successfully."
+          },
+          "400": {
+            "description": "Invalid registration details."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/users/verifyOtp": {
+      "post": {
+        "summary": "Verify user OTP",
+        "description": "Verifies the OTP sent to the user’s email during login or registration. If successful, an access token is returned in the response body, and a refresh token is set in a cookie for future authentication.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
                 "type": "object",
                 "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "otp": {
+                    "type": "string"
+                  }
+                },
+                "required": ["email", "otp"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP verified successfully. Access token is returned in the response body, and a refresh token is set in a cookie for future authentication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
                     "firstName": {
-                        "type": "string"
+                      "type": "string"
                     },
                     "lastName": {
-                        "type": "string"
+                      "type": "string"
                     },
                     "email": {
-                        "type": "string",
-                        "format": "email"
+                      "type": "string",
+                      "format": "email"
                     },
-                    "passwordHash": {
-                        "type": "string"
-                    },
-                    "role": {
-                        "type": "string",
-                        "enum": [
-                            "user",
-                            "admin"
-                        ]
-                    },
-                    "profilePictureUrl": {
-                        "type": "string",
-                        "default": "https://www.gravatar.com/avatar/?d=mp"
-                    },
-                    "tokenVersion": {
-                        "type": "integer"
-                    },
-                    "otp": {
-                        "type": "string"
-                    },
-                    "otpExpiration": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "joinedChallenges": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
+                    "accessToken": {
+                      "type": "string"
                     }
-                },
-                "required": [
-                    "firstName",
-                    "lastName",
-                    "email",
-                    "role",
-                    "passwordHash"
-                ]
-            },
-            "Challenge": {
-                "type": "object",
-                "properties": {
-                    "title": {
-                        "type": "string"
-                    },
-                    "deadline": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "duration": {
-                        "type": "string"
-                    },
-                    "moneyPrize": {
-                        "type": "string"
-                    },
-                    "challengeStatus": {
-                        "type": "string",
-                        "enum": [
-                            "open",
-                            "ongoing",
-                            "completed"
-                        ]
-                    },
-                    "contactEmail": {
-                        "type": "string",
-                        "format": "email"
-                    },
-                    "projectDescription": {
-                        "type": "string"
-                    },
-                    "projectBrief": {
-                        "type": "string"
-                    },
-                    "projectTasks": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "participants": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
-                    }
-                },
-                "required": [
-                    "title",
-                    "deadline",
-                    "duration",
-                    "moneyPrize",
-                    "challengeStatus",
-                    "contactEmail",
-                    "projectDescription",
-                    "projectBrief",
-                    "projectTasks"
-                ]
-            }
-        },
-        "ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "error": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "statusCode": {
-                    "type": "integer"
+                  },
+                  "required": ["firstName", "lastName", "email", "accessToken"]
                 }
+              }
             }
+          },
+          "400": {
+            "description": "Invalid or expired OTP."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
         }
+      }
     },
-    "security": [
-        {
+    "/users/{id}": {
+      "get": {
+        "summary": "Retrieve user details",
+        "description": "Fetches the user details by ID, but only returns selected attributes (firstName, lastName, email, profilePictureUrl). Requires user authorization.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
             "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "profilePictureUrl": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "firstName",
+                        "lastName",
+                        "email",
+                        "profilePictureUrl"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error."
+          }
         }
-    ],
-    "paths": {
-        "/users": {
-            "get": {
-                "summary": "Retrieve a list of users",
-                "description": "Fetches all users from the database, but only returns selected user attributes (firstName, lastName, email, profilePictureUrl). Requires user authorization.",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "A list of users with selected attributes",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "users": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "firstName": {
-                                                        "type": "string"
-                                                    },
-                                                    "lastName": {
-                                                        "type": "string"
-                                                    },
-                                                    "email": {
-                                                        "type": "string",
-                                                        "format": "email"
-                                                    },
-                                                    "profilePictureUrl": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                "required": [
-                                                    "firstName",
-                                                    "lastName",
-                                                    "email",
-                                                    "profilePictureUrl"
-                                                ]
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    }
-                }
+      }
+    },
+    "/users/deleteUser/{id}": {
+      "delete": {
+        "summary": "Delete a user from the system",
+        "description": "Delete the user completely from the system by their unique ID. This action requires user authorization.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the user to be deleted",
+            "schema": {
+              "type": "string"
             }
-        },
-        "/users/login": {
-            "post": {
-                "summary": "Login a user",
-                "description": "Logs in a user and generates an OTP for verification.",
-                "responses": {
-                    "200": {
-                        "description": "User login successful. An OTP will be sent to the user’s email."
-                    },
-                    "400": {
-                        "description": "Invalid credentials"
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/users/register": {
-            "post": {
-                "summary": "Register a new user",
-                "description": "Registers a new user in the system and sends an OTP to the user's email.",
-                "responses": {
-                    "201": {
-                        "description": "User registered successfully."
-                    },
-                    "400": {
-                        "description": "Invalid registration details."
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/users/verifyOtp": {
-            "post": {
-                "summary": "Verify user OTP",
-                "description": "Verifies the OTP sent to the user’s email during login or registration. If successful, an access token is returned in the response body, and a refresh token is set in a cookie for future authentication.",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email"
-                                    },
-                                    "otp": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "email",
-                                    "otp"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OTP verified successfully. Access token is returned in the response body, and a refresh token is set in a cookie for future authentication.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "firstName": {
-                                            "type": "string"
-                                        },
-                                        "lastName": {
-                                            "type": "string"
-                                        },
-                                        "email": {
-                                            "type": "string",
-                                            "format": "email"
-                                        },
-                                        "accessToken": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "firstName",
-                                        "lastName",
-                                        "email",
-                                        "accessToken"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid or expired OTP."
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/users/{id}": {
-            "get": {
-                "summary": "Retrieve user details",
-                "description": "Fetches the user details by ID, but only returns selected attributes (firstName, lastName, email, profilePictureUrl). Requires user authorization.",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User details retrieved successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "user": {
-                                            "type": "object",
-                                            "properties": {
-                                                "firstName": {
-                                                    "type": "string"
-                                                },
-                                                "lastName": {
-                                                    "type": "string"
-                                                },
-                                                "email": {
-                                                    "type": "string",
-                                                    "format": "email"
-                                                },
-                                                "profilePictureUrl": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "required": [
-                                                "firstName",
-                                                "lastName",
-                                                "email",
-                                                "profilePictureUrl"
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "User not found"
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/users/deleteUser/{id}": {
-            "delete": {
-                "summary": "Delete a user from the system",
-                "description": "Delete the user completely from the system by their unique ID. This action requires user authorization.",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "description": "The ID of the user to be deleted",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User deleted successfully"
-                    },
-                    "401": {
-                        "description": "Unauthorized. Access token is missing or invalid."
-                    },
-                    "403": {
-                        "description": "Forbidden. Users are not allowed to perform these actions"
-                    },
-                    "404": {
-                        "description": "User not found."
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/challenges": {
-            "get": {
-                "summary": "Retrieve a list of challenges",
-                "description": "Fetches all challenges from the system.",
-                "responses": {
-                    "200": {
-                        "description": "A list of challenges",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Challenge"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/challenges/create": {
-            "post": {
-                "summary": "Create a new challenge",
-                "description": "Creates a new challenge. Requires admin authorization.",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Challenge created successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/challenges/edit/{id}": {
-            "patch": {
-                "summary": "Edit an existing challenge",
-                "description": "Edits a challenge. Requires admin authorization.",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "description": "The ID of the challenge to be edited",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Challenge updated successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "400": {
-                        "description": "Invalid input. Some fields might be missing or incorrect."
-                    },
-                    "404": {
-                        "description": "Challenge not found."
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/challenges/{id}": {
-            "get": {
-                "summary": "Retrieve a single challenge by ID",
-                "description": "Fetches a single challenge by ID. Uses caching for faster retrieval.",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Challenge details retrieved successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Challenge"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/challenges/join/{userId}/{challengeId}": {
-            "put": {
-                "summary": "Join a challenge",
-                "description": "Allows a user to join a challenge. Requires user authorization and challenge validation.",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "challengeId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User joined the challenge successfully"
-                    },
-                    "400": {
-                        "description": "Invalid challenge status or other errors"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/challenges/leave/{userId}/{challengeId}": {
-            "delete": {
-                "summary": "Leave a challenge",
-                "description": "Allows a user to leave a challenge. Requires user authorization.",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "challengeId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User left the challenge successfully"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/challenges/delete/{id}": {
-            "delete": {
-                "summary": "Delete a challenge",
-                "description": "Allows an admin to delete a challenge. Requires admin authorization.",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Challenge deleted successfully"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
-        },
-        "/users/delete/{id}": {
-            "delete": {
-                "summary": "Delete a user",
-                "description": "Allows a user to delete their own account or an admin to delete a user. Requires user authorization.",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User deleted successfully"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Internal server error."
-                    }
-                }
-            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized. Access token is missing or invalid."
+          },
+          "403": {
+            "description": "Forbidden. Users are not allowed to perform these actions"
+          },
+          "404": {
+            "description": "User not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
         }
+      }
+    },
+    "/challenges": {
+      "get": {
+        "summary": "Retrieve a list of challenges",
+        "description": "Fetches all challenges from the system.",
+        "responses": {
+          "200": {
+            "description": "A list of challenges",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Challenge"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/challenges/create": {
+      "post": {
+        "summary": "Create a new challenge",
+        "description": "Creates a new challenge. Requires admin authorization.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Challenge created successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/challenges/edit/{id}": {
+      "patch": {
+        "summary": "Edit an existing challenge",
+        "description": "Edits a challenge. Requires admin authorization.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the challenge to be edited",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Challenge updated successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "400": {
+            "description": "Invalid input. Some fields might be missing or incorrect."
+          },
+          "404": {
+            "description": "Challenge not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/challenges/{id}": {
+      "get": {
+        "summary": "Retrieve a single challenge by ID",
+        "description": "Fetches a single challenge by ID. Uses caching for faster retrieval.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Challenge details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Challenge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/challenges/join/{userId}/{challengeId}": {
+      "put": {
+        "summary": "Join a challenge",
+        "description": "Allows a user to join a challenge. Requires user authorization and challenge validation.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "challengeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User joined the challenge successfully"
+          },
+          "400": {
+            "description": "Invalid challenge status or other errors"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/challenges/leave/{userId}/{challengeId}": {
+      "delete": {
+        "summary": "Leave a challenge",
+        "description": "Allows a user to leave a challenge. Requires user authorization.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "challengeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User left the challenge successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/challenges/delete/{id}": {
+      "delete": {
+        "summary": "Delete a challenge",
+        "description": "Allows an admin to delete a challenge. Requires admin authorization.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Challenge deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/users/delete/{id}": {
+      "delete": {
+        "summary": "Delete a user",
+        "description": "Allows a user to delete their own account or an admin to delete a user. Requires user authorization.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
     }
+  }
 }

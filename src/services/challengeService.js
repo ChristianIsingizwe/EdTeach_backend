@@ -8,9 +8,6 @@ import {
 
 const cacheKeyForAllChallenges = `challenges:all`;
 
-/**
- * Create a new challenge
- */
 const createChallengeService = async (challengeData) => {
   const newChallenge = new Challenge(challengeData);
   await newChallenge.save();
@@ -18,9 +15,6 @@ const createChallengeService = async (challengeData) => {
   return newChallenge;
 };
 
-/**
- * Edit an existing challenge
- */
 const editChallengeService = async (id, updateData) => {
   const updatedChallenge = await Challenge.findByIdAndUpdate(id, updateData, {
     new: true,
@@ -36,9 +30,6 @@ const editChallengeService = async (id, updateData) => {
   return updatedChallenge;
 };
 
-/**
- * Delete a challenge
- */
 const deleteChallengeService = async (id) => {
   const deletedChallenge = await Challenge.findByIdAndDelete(id);
   if (deletedChallenge) {
@@ -48,9 +39,6 @@ const deleteChallengeService = async (id) => {
   return deletedChallenge;
 };
 
-/**
- * Find a challenge by ID (with caching)
- */
 const findChallengeService = async (id) => {
   const cacheKey = `challenge:${id}`;
   const cachedChallenge = await getCachedData(cacheKey);
@@ -62,9 +50,6 @@ const findChallengeService = async (id) => {
   return challenge;
 };
 
-/**
- * Retrieve all challenges (with caching)
- */
 const findChallengesService = async () => {
   const cachedChallenges = await getCachedData(cacheKeyForAllChallenges);
   if (cachedChallenges) return cachedChallenges;
@@ -76,9 +61,6 @@ const findChallengesService = async () => {
   return challenges;
 };
 
-/**
- * Allow a user to join a challenge
- */
 const joinChallengeService = async (userId, challengeId) => {
   const user = await User.findById(userId);
   const challenge = await Challenge.findById(challengeId);
@@ -95,9 +77,6 @@ const joinChallengeService = async (userId, challengeId) => {
   return challenge;
 };
 
-/**
- * Allow a user to leave a challenge
- */
 const leaveChallengeService = async (userId, challengeId) => {
   const user = await User.findById(userId);
   const challenge = await Challenge.findById(challengeId);

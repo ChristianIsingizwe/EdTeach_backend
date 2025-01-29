@@ -74,6 +74,7 @@ const editChallenge = async (req, res) => {
 
 const deleteChallenge = async (req, res) => {
   try {
+    
     const challenge = await deleteChallengeService(req.params.id);
     if (!challenge)
       return res.status(404).json({ message: "Challenge not found" });

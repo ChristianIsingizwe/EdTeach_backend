@@ -22,7 +22,6 @@ export const sendOTP = async (email, otp) => {
     await mailer.sendEmail(config);
   } catch (error) {
     console.log(error);
-    // TODO: Logging service eg: Sentry
     throw new Error(`Sending OTP Failed: ${error}`);
   }
 };
