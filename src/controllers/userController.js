@@ -32,6 +32,7 @@ const loginUser = async (req, res) => {
 const verifyOTP = async (req, res) => {
   try {
     const response = await verifyOTPService(req.body);
+
     if (response.cookies) {
       res.cookie(
         "refreshToken",
@@ -39,10 +40,11 @@ const verifyOTP = async (req, res) => {
         response.cookies.options
       );
     }
+
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error verifying OTP: ", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -59,10 +61,10 @@ const findUser = async (req, res) => {
 const findUsers = async (req, res) => {
   try {
     const response = await findUsersService();
-    return res.status(response.status).json(response.data);
+    return res.status(response.status).json(response.data); // Send the response with status and data
   } catch (error) {
     console.error("Error finding users: ", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -78,13 +80,16 @@ const deleteUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const response = await updateUserService(req);
+    const { id } = req.params;
+    const response = await updateUserService(id, req);
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error updating user profile:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while updating the profile." });
+    return res
+      .status(error.status || 500)
+      .json(
+        error.data || { error: "An error occurred while updating the profile." }
+      );
   }
 };
 

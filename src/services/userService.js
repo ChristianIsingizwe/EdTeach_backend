@@ -13,12 +13,21 @@ import { sendOTP } from "../utils/sendOtp";
 import ensureUploadDir from "../utils/ensureFolderExist";
 
 const registerUserService = async (userData) => {
-  const { firstName, lastName, email, password, role } = userData;
+  const { firstName, lastName, email, password, role } = _.pick(userData, [
+    "firstName",
+    "lastName",
+    "email",
+    "password",
+    "role",
+  ]);
 
   const userAlreadyExist = await User.findOne({ email });
-  if (userAlreadyExist) throw new Error("User already exists.");
+  if (userAlreadyExist) {
+    return { status: 400, data: { message: "User already exists." } };
+  }
 
   const hashedPassword = await hashPassword(password);
+
   const newUser = new User({
     firstName,
     lastName,
@@ -27,25 +36,40 @@ const registerUserService = async (userData) => {
     role,
   });
 
-  const otp = randomBytes(3).toString("hex");
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
   newUser.otp = otp;
-  newUser.otpExpiration = Date.now() + 5 * 60 * 1000;
+  newUser.otpExpiration = Date.now() + 5 * 60 * 1000; // 5-minute expiration for the otp.
+
   await sendOTP(email, otp);
 
   await newUser.save();
-  return "User registered successfully. Please check your email.";
+
+  return {
+    status: 201,
+    data: { message: "User registered successfully. Please check your email." },
+  };
 };
 
 const loginUserService = async ({ email, password }) => {
   const user = await User.findOne({ email });
-  if (!user) throw new Error("User not found");
+  if (!user) {
+    return {
+      status: 404,
+      data: { message: "User not found." },
+    };
+  }
 
   const isPasswordCorrect = await verifyPassword(password, user.passwordHash);
-  if (!isPasswordCorrect) throw new Error("Invalid credentials");
+  if (!isPasswordCorrect) {
+    return {
+      status: 400,
+      data: { message: "Invalid credentials." },
+    };
+  }
 
-  const otp = randomBytes(3).toString("hex");
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
   user.otp = otp;
-  user.otpExpiration = Date.now() + 5 * 60 * 1000;
+  user.otpExpiration = Date.now() + 5 * 60 * 1000; // 5-minute expiration for the otp.
   await user.save();
   await sendOTP(user.email, otp);
 
@@ -54,9 +78,13 @@ const loginUserService = async ({ email, password }) => {
 
 const verifyOTPService = async ({ email, otp }) => {
   const user = await User.findOne({ email });
-  if (!user) throw new Error("User not found.");
-  if (!user.otp || user.otp !== otp || Date.now() > user.otpExpiration)
-    throw new Error("Invalid or expired OTP.");
+  if (!user) {
+    return { status: 404, data: { message: "User not found." } };
+  }
+
+  if (!user.otp || user.otp !== otp || Date.now() > user.otpExpiration) {
+    return { status: 400, data: { message: "Invalid or expired OTP." } };
+  }
 
   const accessToken = generateAccessToken({
     userId: user._id,
@@ -71,26 +99,67 @@ const verifyOTPService = async ({ email, otp }) => {
   user.otpExpiration = null;
   await user.save();
 
-  return { accessToken, refreshToken, user };
+  return {
+    status: 200,
+    data: {
+      accessToken,
+      refreshToken,
+      user,
+    },
+    cookies: {
+      refreshToken,
+      options: { httpOnly: true, secure: true, sameSite: "Strict" }, // Add cookie details
+    },
+  };
 };
 
 const findUserService = async (id) => {
   const user = await User.findById(id).select(
     "firstName lastName email profilePictureUrl"
   );
-  if (!user) throw new Error("User not found");
-  return user;
+  if (!user) {
+    return {
+      status: 404,
+      data: { message: "User not found" },
+    };
+  }
+  return {
+    status: 200,
+    data: { user: user },
+  };
 };
 
 const findUsersService = async () => {
-  return await User.find().select("firstName lastName email profilePictureUrl");
+  try {
+    const users = await User.find().select(
+      "firstName lastName email profilePictureUrl"
+    );
+    return {
+      status: 200,
+      data: users,
+    };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return {
+      status: 500,
+      data: { message: "Internal server error" },
+    };
+  }
 };
 
 const deleteUserService = async (id) => {
   const user = await User.findById(id);
-  if (!user) throw new Error("User not found");
+  if (!user) {
+    return {
+      status: 404,
+      data: { message: "User not found." },
+    };
+  }
   await User.findByIdAndDelete(id);
-  return "User deleted successfully";
+  return {
+    status: 200,
+    data: { message: "User deleted successfully" },
+  };
 };
 
 const updateUserService = async (id, req) => {
@@ -104,11 +173,15 @@ const updateUserService = async (id, req) => {
 
   return new Promise((resolve, reject) => {
     form.parse(req, async (err, fields, files) => {
-      if (err) return reject("Invalid form data.");
+      if (err) {
+        return reject({ status: 400, data: { error: "Invalid form data." } });
+      }
 
       try {
         const user = await User.findById(id);
-        if (!user) return reject("User not found.");
+        if (!user) {
+          return reject({ status: 404, data: { error: "User not found." } });
+        }
 
         if (fields.firstName) user.firstName = fields.firstName;
         if (fields.lastName) user.lastName = fields.lastName;
@@ -127,9 +200,15 @@ const updateUserService = async (id, req) => {
         }
 
         await user.save();
-        resolve({ message: "User updated successfully.", user });
+        resolve({
+          status: 200,
+          data: { message: "User updated successfully.", user },
+        });
       } catch (error) {
-        reject("An error occurred while updating the profile.");
+        reject({
+          status: 500,
+          data: { error: "An error occurred while updating the profile." },
+        });
       }
     });
   });
