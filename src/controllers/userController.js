@@ -61,7 +61,7 @@ const findUser = async (req, res) => {
 const findUsers = async (req, res) => {
   try {
     const response = await findUsersService();
-    return res.status(response.status).json(response.data); // Send the response with status and data
+    return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error finding users: ", error);
     return res.status(500).json({ message: "Internal server error" });
