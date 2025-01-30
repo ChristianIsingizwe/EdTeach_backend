@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { randomBytes } from "crypto";
 import cloudinary from "cloudinary";
 import formidable from "formidable";
 import path from "path";
@@ -69,7 +68,7 @@ const loginUserService = async ({ email, password }) => {
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   user.otp = otp;
-  user.otpExpiration = Date.now() + 5 * 60 * 1000; // 5-minute expiration for the otp.
+  user.otpExpiration = Date.now() + 5 * 60 * 1000;
   await user.save();
   await sendOTP(user.email, otp);
 
