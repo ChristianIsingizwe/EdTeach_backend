@@ -5,7 +5,6 @@ import express from "express";
 import cors from "cors";
 import { Redis } from "ioredis";
 import swaggerUi from "swagger-ui-express";
-import path from "path";
 
 import connectToDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
@@ -14,7 +13,6 @@ import { generalRateLimiter } from "./middlewares/rateLimiting";
 
 const app = express();
 const redis = new Redis();
-const swaggerDocument = path.join(__dirname, "docs", "swagger.json");
 
 app.use(cors());
 app.use(express.json());

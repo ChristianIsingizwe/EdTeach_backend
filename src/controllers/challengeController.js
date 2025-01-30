@@ -11,6 +11,7 @@ import {
   createChallengeSchema,
   editChallengeSchema,
 } from "../joiSchemas/challengeSchemas";
+import mongoose from "mongoose";
 
 const createChallenge = async (req, res) => {
   try {
@@ -43,6 +44,7 @@ const createChallenge = async (req, res) => {
 const editChallenge = async (req, res) => {
   try {
     const { id } = req.params;
+
     const { error, value } = editChallengeSchema.validate(req.body, {
       abortEarly: false,
     });
@@ -74,8 +76,9 @@ const editChallenge = async (req, res) => {
 
 const deleteChallenge = async (req, res) => {
   try {
-    
-    const challenge = await deleteChallengeService(req.params.id);
+    const { id } = req.params;
+
+    const challenge = await deleteChallengeService(id);
     if (!challenge)
       return res.status(404).json({ message: "Challenge not found" });
 
@@ -90,7 +93,11 @@ const deleteChallenge = async (req, res) => {
 
 const findChallenge = async (req, res) => {
   try {
-    const challenge = await findChallengeService(req.params.id);
+    const { id } = req.params;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ message: "Challenge not found" });
+    }
+    const challenge = await findChallengeService(id);
     if (!challenge)
       return res.status(404).json({ message: "Challenge not found" });
 
@@ -113,10 +120,14 @@ const findChallenges = async (req, res) => {
 
 const joinChallenge = async (req, res) => {
   try {
-    const result = await joinChallengeService(
-      req.params.userId,
-      req.params.challengeId
-    );
+    const { userId, challengeId } = req.params;
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(challengeId)
+    ) {
+      return res.status(404).json({ message: "User or Challenge not found" });
+    }
+    const result = await joinChallengeService(userId, challengeId);
 
     if (!result)
       return res.status(404).json({ message: "User or challenge not found" });
@@ -135,10 +146,15 @@ const joinChallenge = async (req, res) => {
 
 const leaveChallenge = async (req, res) => {
   try {
-    const result = await leaveChallengeService(
-      req.params.userId,
-      req.params.challengeId
-    );
+    const { userId, challengeId } = req.params;
+
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(challengeId)
+    ) {
+      return res.status(404).json({ message: "User or Challenge not found" });
+    }
+    const result = await leaveChallengeService(userId, challengeId);
 
     if (!result)
       return res.status(404).json({ message: "User or challenge not found" });

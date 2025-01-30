@@ -11,6 +11,7 @@ import {
 import authorize from "../middlewares/authorization.js";
 import checkChallengeStatus from "../middlewares/checkChallengeStatus.js";
 import cacheMiddlware from "../middlewares/cacheMiddleware.js";
+import validateObjectId from "../middlewares/validateObjectId.js";
 import {
   adminRateLimiter,
   generalRateLimiter,
@@ -27,10 +28,17 @@ router.get(
 
 router.post("/create", authorize("admin"), adminRateLimiter, createChallenge);
 
-router.patch("/edit/:id", authorize("admin"), adminRateLimiter, editChallenge);
+router.patch(
+  "/edit/:id",
+  authorize("admin"),
+  validateObjectId,
+  adminRateLimiter,
+  editChallenge
+);
 
 router.get(
   "/:id",
+  validateObjectId,
   generalRateLimiter,
   cacheMiddlware(() => `challenge:${req.params.id}`),
   findChallenge
@@ -54,6 +62,7 @@ router.delete(
 router.delete(
   "/delete/:id",
   authorize("admin"),
+  validateObjectId,
   adminRateLimiter,
   deleteChallenge
 );
