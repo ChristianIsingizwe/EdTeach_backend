@@ -1,3 +1,8 @@
+import { mailer } from "../lib/mailer";
+import nodemailer from "nodemailer";
+
+jest.mock("nodemailer");
+
 describe("Mailer Integration Tests", () => {
   let transporterMock;
 
