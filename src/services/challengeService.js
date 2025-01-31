@@ -13,7 +13,7 @@ const createChallengeService = async (challengeData) => {
   await newChallenge.save();
   await deleteCachedData(cacheKeyForAllChallenges);
   return newChallenge;
-}; 
+};
 
 const editChallengeService = async (id, updateData) => {
   const updatedChallenge = await Challenge.findByIdAndUpdate(id, updateData, {
