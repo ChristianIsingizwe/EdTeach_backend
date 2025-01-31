@@ -16,6 +16,30 @@ const createChallengeService = async (challengeData) => {
 };
 
 const editChallengeService = async (id, updateData) => {
+  const challenge = await Challenge.findById(id);
+
+  if (!challenge) {
+    return null;
+  }
+
+  if (updateData.challengeStatus) {
+    const validTransitions = {
+      open: ["ongoing"],
+      ongoing: ["closed"],
+      closed: [],
+    };
+
+    if (
+      !validTransitions[challenge.challengeStatus].includes(
+        updateData.challengeStatus
+      )
+    ) {
+      throw new Error(
+        `Invalid status transition from '${challenge.challengeStatus}' to '${updateData.challengeStatus}'.`
+      );
+    }
+  }
+
   const updatedChallenge = await Challenge.findByIdAndUpdate(id, updateData, {
     new: true,
     runValidators: true,

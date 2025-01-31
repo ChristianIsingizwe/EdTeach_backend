@@ -7,6 +7,7 @@ import {
   deleteUserService,
   updateUserService,
 } from "../services/userService.js";
+import _ from "lodash";
 
 const registerUser = async (req, res) => {
   try {

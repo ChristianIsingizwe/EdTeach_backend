@@ -44,7 +44,6 @@ const createChallenge = async (req, res) => {
 const editChallenge = async (req, res) => {
   try {
     const { id } = req.params;
-
     const { error, value } = editChallengeSchema.validate(req.body, {
       abortEarly: false,
     });
@@ -62,15 +61,17 @@ const editChallenge = async (req, res) => {
     }
 
     const challenge = await editChallengeService(id, value);
-    if (!challenge)
+
+    if (!challenge) {
       return res.status(404).json({ error: "Challenge not found" });
+    }
 
     res
       .status(200)
       .json({ message: "Challenge updated successfully.", challenge });
   } catch (error) {
-    console.error("Error: ", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error updating challenge: ", error);
+    res.status(400).json({ message: error.message || "Internal server error" });
   }
 };
 
