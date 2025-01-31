@@ -1,4 +1,8 @@
-import { getCachedData, setCachedData, deleteCachedData } from "../utils/cacheUtils";
+import {
+  getCachedData,
+  setCachedData,
+  deleteCachedData,
+} from "../utils/cacheUtils";
 import redis from "../redis";
 
 jest.mock("../redis", () => ({
@@ -8,8 +12,6 @@ jest.mock("../redis", () => ({
 }));
 
 jest.mock("nodemailer");
-
-
 
 describe("Redis Caching Utilities", () => {
   const mockKey = "testKey";

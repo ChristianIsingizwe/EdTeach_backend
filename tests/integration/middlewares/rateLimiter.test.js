@@ -1,11 +1,21 @@
 import request from "supertest";
 import express from "express";
-import { generalRateLimiter, authRateLimiter, adminRateLimiter } from "../middlewares/rateLimiter";
+import {
+  generalRateLimiter,
+  authRateLimiter,
+  adminRateLimiter,
+} from "../middlewares/rateLimiter";
 
 const app = express();
-app.use("/general", generalRateLimiter, (req, res) => res.json({ message: "General Access" }));
-app.use("/auth", authRateLimiter, (req, res) => res.json({ message: "Auth Access" }));
-app.use("/admin", adminRateLimiter, (req, res) => res.json({ message: "Admin Access" }));
+app.use("/general", generalRateLimiter, (req, res) =>
+  res.json({ message: "General Access" })
+);
+app.use("/auth", authRateLimiter, (req, res) =>
+  res.json({ message: "Auth Access" })
+);
+app.use("/admin", adminRateLimiter, (req, res) =>
+  res.json({ message: "Admin Access" })
+);
 
 describe("Rate Limiter Middleware", () => {
   test("should allow requests within rate limit", async () => {
@@ -20,7 +30,9 @@ describe("Rate Limiter Middleware", () => {
     }
     const response = await request(app).get("/general");
     expect(response.status).toBe(429);
-    expect(response.body).toEqual({ message: "Too many requests. Try again later" });
+    expect(response.body).toEqual({
+      message: "Too many requests. Try again later",
+    });
   });
 
   test("should allow authentication requests within rate limit", async () => {
@@ -34,6 +46,8 @@ describe("Rate Limiter Middleware", () => {
     }
     const response = await request(app).get("/auth");
     expect(response.status).toBe(429);
-    expect(response.body).toEqual({ message: "Too many authentication requests, please try again later" });
+    expect(response.body).toEqual({
+      message: "Too many authentication requests, please try again later",
+    });
   });
 });

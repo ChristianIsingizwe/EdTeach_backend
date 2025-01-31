@@ -10,7 +10,7 @@ describe("Challenge Model Tests", () => {
   it("should create a challenge with valid data", async () => {
     const validChallenge = new Challenge({
       title: "AI Innovation Challenge",
-      deadline: new Date(Date.now() + 86400000), 
+      deadline: new Date(Date.now() + 86400000),
       duration: "3 weeks",
       moneyPrize: "5000 USD",
       challengeStatus: "open",
