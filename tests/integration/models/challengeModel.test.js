@@ -35,7 +35,7 @@ describe("Challenge Model Tests", () => {
   test("should fail validation if deadline is in the past", async () => {
     const invalidChallenge = new Challenge({
       title: "Expired Challenge",
-      deadline: new Date(Date.now() - 86400000), // 1 day in the past
+      deadline: new Date(Date.now() - 86400000),
       duration: "2 weeks",
       moneyPrize: "2000 USD",
       challengeStatus: "open",
