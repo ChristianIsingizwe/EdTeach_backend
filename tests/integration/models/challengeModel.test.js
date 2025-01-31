@@ -7,10 +7,10 @@ describe("Challenge Model Tests", () => {
     mockingoose.resetAll();
   });
 
-  test("should create a challenge with valid data", async () => {
+  it("should create a challenge with valid data", async () => {
     const validChallenge = new Challenge({
       title: "AI Innovation Challenge",
-      deadline: new Date(Date.now() + 86400000), // 1 day in the future
+      deadline: new Date(Date.now() + 86400000), 
       duration: "3 weeks",
       moneyPrize: "5000 USD",
       challengeStatus: "open",

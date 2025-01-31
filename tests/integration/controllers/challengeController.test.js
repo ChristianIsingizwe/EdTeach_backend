@@ -41,7 +41,7 @@ describe("Challenge Controller Tests", () => {
       const challengeData = {
         title: "New Challenge",
         description: "Test challenge",
-        deadline: new Date(Date.now() + 86400000), // 1 day in the future
+        deadline: new Date(Date.now() + 86400000),
       };
 
       createChallengeService.mockResolvedValue(challengeData);
