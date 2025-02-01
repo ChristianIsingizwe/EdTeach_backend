@@ -1,6 +1,7 @@
 import request from "supertest";
 import express from "express";
 import mongoose from "mongoose";
+import mockingoose from "mockingoose";
 import {
   createChallenge,
   editChallenge,
@@ -9,16 +10,16 @@ import {
   findChallenges,
   joinChallenge,
   leaveChallenge,
-} from "../controllers/challengeController";
-import Challenge from "../models/challengeModel";
+} from "../../../src/controllers/challengeController";
+
+import Challenge from "../../../src/models/challengeModel";
 import {
   createChallengeService,
   joinChallengeService,
   leaveChallengeService,
-} from "../services/challengeService";
-import mockingoose from "mockingoose";
+} from "../../../src/services/challengeService";
 
-jest.mock("../services/challengeService");
+jest.mock("../../../src/services/challengeService");
 
 const app = express();
 app.use(express.json());
@@ -69,7 +70,7 @@ describe("Challenge Controller Tests", () => {
       const challengeData = {
         title: "Old Challenge",
         description: "Past deadline",
-        deadline: new Date(Date.now() - 86400000), // 1 day in the past
+        deadline: new Date(Date.now() - 86400000),
       };
 
       const response = await request(app)
@@ -250,3 +251,4 @@ describe("Challenge Controller Tests", () => {
     });
   });
 });
+ 

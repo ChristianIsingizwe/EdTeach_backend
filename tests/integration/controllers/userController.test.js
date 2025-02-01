@@ -10,9 +10,9 @@ import {
   findUsersService,
   deleteUserService,
   updateUserService,
-} from "../services/userService.js";
+} from "../../../src/services/userService";
 
-jest.mock("../services/userService.js");
+jest.mock("../../../src/services/userService");
 
 let mongoServer;
 
