@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import User from "../models/User"; // Ensure correct path to your User model
+import User from "../../../src/models/userModel";
 
 let mongoServer;
 
