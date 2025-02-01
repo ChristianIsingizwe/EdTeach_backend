@@ -37,7 +37,7 @@ describe("Challenge Controller Tests", () => {
   });
 
   describe("Create Challenge", () => {
-    test("should create a challenge successfully", async () => {
+    it("should create a challenge successfully", async () => {
       const challengeData = {
         title: "New Challenge",
         description: "Test challenge",
@@ -58,14 +58,14 @@ describe("Challenge Controller Tests", () => {
       expect(response.body).toHaveProperty("challenge");
     });
 
-    test("should return 400 for invalid input", async () => {
+    it("should return 400 for invalid input", async () => {
       const response = await request(app).post("/challenge").send({});
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("error");
     });
 
-    test("should return 400 if deadline is in the past", async () => {
+    it("should return 400 if deadline is in the past", async () => {
       const challengeData = {
         title: "Old Challenge",
         description: "Past deadline",
@@ -85,7 +85,7 @@ describe("Challenge Controller Tests", () => {
   });
 
   describe("Edit Challenge", () => {
-    test("should edit a challenge successfully", async () => {
+    it("should edit a challenge successfully", async () => {
       const challengeId = new mongoose.Types.ObjectId();
       const updatedData = { title: "Updated Challenge" };
 
@@ -102,7 +102,7 @@ describe("Challenge Controller Tests", () => {
       );
     });
 
-    test("should return 400 for invalid update data", async () => {
+    it("should return 400 for invalid update data", async () => {
       const challengeId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .patch(`/challenge/${challengeId}`)
@@ -112,7 +112,7 @@ describe("Challenge Controller Tests", () => {
       expect(response.body).toHaveProperty("error");
     });
 
-    test("should return 404 if challenge is not found", async () => {
+    it("should return 404 if challenge is not found", async () => {
       const challengeId = new mongoose.Types.ObjectId();
       editChallengeService.mockResolvedValue(null);
 
@@ -126,7 +126,7 @@ describe("Challenge Controller Tests", () => {
   });
 
   describe("Delete Challenge", () => {
-    test("should delete a challenge successfully", async () => {
+    it("should delete a challenge successfully", async () => {
       const challengeId = new mongoose.Types.ObjectId();
       deleteChallengeService.mockResolvedValue({});
 
@@ -139,7 +139,7 @@ describe("Challenge Controller Tests", () => {
       );
     });
 
-    test("should return 404 if challenge is not found", async () => {
+    it("should return 404 if challenge is not found", async () => {
       const challengeId = new mongoose.Types.ObjectId();
       deleteChallengeService.mockResolvedValue(null);
 
@@ -151,7 +151,7 @@ describe("Challenge Controller Tests", () => {
   });
 
   describe("Find Challenge", () => {
-    test("should return challenge details", async () => {
+    it("should return challenge details", async () => {
       const challengeId = new mongoose.Types.ObjectId();
       mockingoose(Challenge).toReturn(
         { title: "Existing Challenge" },
@@ -164,7 +164,7 @@ describe("Challenge Controller Tests", () => {
       expect(response.body).toHaveProperty("challenge");
     });
 
-    test("should return 404 if challenge is not found", async () => {
+    it("should return 404 if challenge is not found", async () => {
       const challengeId = new mongoose.Types.ObjectId();
       mockingoose(Challenge).toReturn(null, "findOne");
 
@@ -176,7 +176,7 @@ describe("Challenge Controller Tests", () => {
   });
 
   describe("Join Challenge", () => {
-    test("should allow user to join a challenge", async () => {
+    it("should allow user to join a challenge", async () => {
       const userId = new mongoose.Types.ObjectId();
       const challengeId = new mongoose.Types.ObjectId();
       joinChallengeService.mockResolvedValue({});

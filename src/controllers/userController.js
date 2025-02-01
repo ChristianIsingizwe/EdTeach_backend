@@ -71,6 +71,12 @@ const findUsers = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
+    if (req.user.role !== "admin" && req.user.id !== req.params.id) {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: You can't delete this user" });
+    }
+
     const response = await deleteUserService(req.params.id);
     return res.status(response.status).json(response.data);
   } catch (error) {

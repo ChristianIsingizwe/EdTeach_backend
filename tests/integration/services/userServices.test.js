@@ -12,7 +12,6 @@ import {
 import { hashPassword } from "../utils/passwordHelper";
 import { sendOTP } from "../utils/sendOtp";
 
-// Mock sendOTP to avoid actual email sending
 jest.mock("../utils/sendOtp", () => ({
   sendOTP: jest.fn(),
 }));
@@ -21,7 +20,6 @@ describe("User Service Integration Tests", () => {
   let testUser;
 
   beforeEach(async () => {
-    // Create a test user in the in-memory database
     testUser = await User.create({
       firstName: "John",
       lastName: "Doe",
@@ -108,7 +106,7 @@ describe("User Service Integration Tests", () => {
   it("should not verify an expired OTP", async () => {
     const otp = "123456";
     testUser.otp = otp;
-    testUser.otpExpiration = Date.now() - 5 * 60 * 1000; // Expired OTP
+    testUser.otpExpiration = Date.now() - 5 * 60 * 1000;
     await testUser.save();
 
     const response = await verifyOTPService({
@@ -158,7 +156,7 @@ describe("User Service Integration Tests", () => {
       body: {
         firstName: "UpdatedName",
       },
-      files: {}, // No profile picture update
+      files: {},
     };
 
     const response = await updateUserService(testUser._id, req);
