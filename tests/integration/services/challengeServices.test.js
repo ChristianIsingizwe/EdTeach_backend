@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
-import Challenge, { findById } from "../models/challengeModel";
-import User, { findById as _findById } from "../models/userModel";
+import Challenge from "../../../src/models/challengeModel";
+import User from "../../../src/models/userModel";
 import {
   createChallengeService,
   editChallengeService,
@@ -9,21 +9,34 @@ import {
   findChallengesService,
   joinChallengeService,
   leaveChallengeService,
-} from "../services/challengeService";
+} from "../../../src/services/challengeService";
 
 describe("Challenge Service Tests", () => {
   let user;
   let challenge;
 
   beforeEach(async () => {
-    user = new User({ username: "testuser", email: "test@example.com" });
+    // Create and save a user
+    user = new User({
+      firstName: "Test",
+      lastName: "User",
+      email: "test@example.com",
+      passwordHash: "hashedpassword",
+      role: "user",
+    });
     await user.save();
 
     challenge = new Challenge({
       title: "Test Challenge",
-      description: "A test challenge",
-      participants: [],
+      deadline: new Date(Date.now() + 86400000),
+      duration: "1 week",
+      moneyPrize: "1000",
       challengeStatus: "open",
+      contactEmail: "contact@example.com",
+      projectDescription: "A test challenge",
+      projectBrief: "Brief description",
+      projectTasks: ["Task 1", "Task 2"],
+      participants: [],
     });
     await challenge.save();
   });
@@ -32,8 +45,15 @@ describe("Challenge Service Tests", () => {
     it("should create a new challenge successfully", async () => {
       const challengeData = {
         title: "New Challenge",
+        deadline: new Date(Date.now() + 86400000),
+        duration: "2 weeks",
+        moneyPrize: "2000",
         description: "A new test challenge",
         challengeStatus: "open",
+        contactEmail: "contact2@example.com",
+        projectDescription: "A new test challenge description",
+        projectBrief: "A new brief",
+        projectTasks: ["Task A", "Task B"],
       };
       const newChallenge = await createChallengeService(challengeData);
 
@@ -72,7 +92,8 @@ describe("Challenge Service Tests", () => {
   describe("Delete Challenge", () => {
     it("should delete a challenge successfully", async () => {
       const deletedChallenge = await deleteChallengeService(challenge._id);
-      const foundChallenge = await findById(challenge._id);
+      // Use the built-in findById method of Challenge
+      const foundChallenge = await Challenge.findById(challenge._id);
 
       expect(deletedChallenge).toBeDefined();
       expect(foundChallenge).toBeNull();
@@ -106,7 +127,8 @@ describe("Challenge Service Tests", () => {
       expect(result).toBeDefined();
       expect(result.participants.includes(user._id)).toBeTruthy();
 
-      const updatedUser = await _findById(user._id);
+      // Use the built-in findById method of User
+      const updatedUser = await User.findById(user._id);
       expect(updatedUser.joinedChallenges.includes(challenge._id)).toBeTruthy();
     });
 
@@ -123,7 +145,8 @@ describe("Challenge Service Tests", () => {
       const result = await leaveChallengeService(user._id, challenge._id);
       expect(result).toBe(true);
 
-      const updatedUser = await _findById(user._id);
+      // Use the built-in findById method of User
+      const updatedUser = await User.findById(user._id);
       expect(updatedUser.joinedChallenges.includes(challenge._id)).toBeFalsy();
     });
 
