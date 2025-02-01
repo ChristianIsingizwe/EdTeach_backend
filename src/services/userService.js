@@ -161,8 +161,6 @@ const deleteUserService = async (id) => {
   };
 };
 
-
-
 const updateUserService = async (id, req) => {
   const form = formidable({
     multiples: false,

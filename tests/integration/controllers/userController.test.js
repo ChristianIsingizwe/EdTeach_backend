@@ -1,5 +1,5 @@
 import request from "supertest";
-import app from "../server"; // Ensure this is your Express app entry point
+import app from "../server";
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import {
@@ -12,7 +12,7 @@ import {
   updateUserService,
 } from "../services/userService.js";
 
-jest.mock("../services/userService.js"); // Mock service functions
+jest.mock("../services/userService.js");
 
 let mongoServer;
 

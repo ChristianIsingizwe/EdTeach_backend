@@ -10,7 +10,7 @@
     "format": "prettier . -w",
     "lint": "eslint .",
     "dev": "concurrently \"babel src -d dist --watch\" \"nodemon dist/index.js\"",
-    "test": "jest --watchAll --verbose --coverage",
+    "test": "jest --watchAll --verbose",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org umurava-experimental --project umurava_backend ./dist  && sentry-cli sourcemaps upload --org umurava-experimental --project umurava_backend ./dist "
   },
   "keywords": [],
