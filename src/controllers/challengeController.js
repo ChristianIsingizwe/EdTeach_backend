@@ -54,6 +54,8 @@ const editChallenge = async (req, res) => {
         .json({ error: error.details.map((d) => d.message) });
     }
 
+    
+
     if (value.deadline && new Date(value.deadline) <= new Date()) {
       return res
         .status(400)

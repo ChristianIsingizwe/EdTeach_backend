@@ -154,5 +154,10 @@ describe("Challenge Service Tests", () => {
       const result = await leaveChallengeService(user._id, challenge._id);
       expect(result).toBe("not_in_challenge");
     });
+
   });
+
+  
 });
+
+
