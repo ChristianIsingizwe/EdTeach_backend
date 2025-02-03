@@ -16,7 +16,6 @@ describe("Challenge Service Tests", () => {
   let challenge;
 
   beforeEach(async () => {
-    // Create and save a user
     user = new User({
       firstName: "Test",
       lastName: "User",
@@ -92,7 +91,7 @@ describe("Challenge Service Tests", () => {
   describe("Delete Challenge", () => {
     it("should delete a challenge successfully", async () => {
       const deletedChallenge = await deleteChallengeService(challenge._id);
-      // Use the built-in findById method of Challenge
+
       const foundChallenge = await Challenge.findById(challenge._id);
 
       expect(deletedChallenge).toBeDefined();
@@ -127,7 +126,6 @@ describe("Challenge Service Tests", () => {
       expect(result).toBeDefined();
       expect(result.participants.includes(user._id)).toBeTruthy();
 
-      // Use the built-in findById method of User
       const updatedUser = await User.findById(user._id);
       expect(updatedUser.joinedChallenges.includes(challenge._id)).toBeTruthy();
     });
@@ -154,10 +152,5 @@ describe("Challenge Service Tests", () => {
       const result = await leaveChallengeService(user._id, challenge._id);
       expect(result).toBe("not_in_challenge");
     });
-
   });
-
-  
 });
-
-
