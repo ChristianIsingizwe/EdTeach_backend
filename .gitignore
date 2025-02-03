@@ -1,6 +1,4 @@
-.env.development
-.env.production
-.env.testing
+.env
 node_modules
 
 /build/
